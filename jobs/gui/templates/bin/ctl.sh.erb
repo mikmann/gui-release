@@ -29,8 +29,8 @@ case $1 in
     export PATH=/var/vcap/packages/ruby-2.6.5-r0.29.0/bin:$PATH
 
     exec /var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle exec \
-      rackup --host ${gui_HOST} \
-             --port ${gui_PORT} \
+      rackup --host ${GUI_HOST} \
+             --port ${GUI_PORT} \
       >>  $LOG_DIR/gui.stdout.log \
       2>> $LOG_DIR/gui.stderr.log
 
