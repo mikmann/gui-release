@@ -418,3 +418,17 @@ iaas:
     join_ip: 172.28.35.21
     domain: consul.dsf2
 ```
+
+## Deploy the GUI Bosh Release on VSphere
+
+## Add RSpec test framework
+
+```yaml
+# Initialize the RSpec framework
+$ rspec --init
+  create   .rspec
+  create   spec/spec_helper.rb
+
+# Execute all test cases
+$ rspec spec --format documentation
+```
