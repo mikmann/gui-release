@@ -1,0 +1,80 @@
+
+<div class="card mb-12 bg-info rounded">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-md-10">
+        <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Lexer&nbsp; &nbsp; </span>
+      </div>
+      <div class="col-md-2">
+        <a href="/calculator/rpn?name=<%= name %>%" class="btn btn-dark rounded-pill">Send Calculator</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">The lexer reads the given expression and converts it into an inverted Polish notation.</h5>
+    <p class="card-text">
+      <div class="row">
+      <div class="col-md-12">
+        <div  style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+          <textarea style="width:100%"><%= name %></textarea></div>
+      </div>
+      </div>
+    </p>
+
+  </div>
+</div>
+
+<br />
+
+<div class="card mb-12 bg-danger rounded">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-md-10">
+        <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Calculator&nbsp; &nbsp; </span>
+      </div>
+      <div class="col-md-2">
+        <a href="/calculator/input" class="btn btn-dark rounded-pill">Send to DB</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">The calculator reads the given inverted Polish notation and calculate the result of this expression.</h5>
+    <p class="card-text">
+      <div class="row">
+      <div class="col-md-12">
+        <div  style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+          <textarea style="width:100%"><%= name %></textarea></div>
+      </div>
+      </div>
+    </p>
+
+  </div>
+</div>
+
+<br />
+
+<div class="card mb-12 bg-warning rounded">
+  <div class="card-header">
+    <div class="row">
+      <div class="col-md-10">
+        <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Database&nbsp; &nbsp; </span>
+      </div>
+      <div class="col-md-2">
+        <a href="/calculator/input" class="btn btn-dark rounded-pill">Send to statistic</a>
+      </div>
+    </div>
+  </div>
+  <div class="card-body">
+    <h5 class="card-title">The calculator reads the given inverted Polish notation and calculate the result of this expression.</h5>
+    <p class="card-text">
+      <div class="row">
+      <div class="col-md-12">
+        <div  style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+          <textarea style="width:100%"><%= name %></textarea></div>
+      </div>
+      </div>
+    </p>
+
+  </div>
+</div>
+

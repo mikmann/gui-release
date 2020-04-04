@@ -1,0 +1,5 @@
+check process gui
+  with pidfile /var/vcap/sys/run/gui/pid
+  start program "/var/vcap/jobs/gui/bin/ctl start"
+  stop program "/var/vcap/jobs/gui/bin/ctl stop"
+  group vcap
