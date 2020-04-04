@@ -293,14 +293,14 @@ files:
 ### Copy all necessary files of the gui app into the Bosh Release
 
 ```yaml
-## Copy the gui app to the src folder
-$ cp -r gui/* gui-boshrelease/src
+# Copy the gui app to the src folder
+$ cp -Ra ~/gui ~/gui-boshrelease/src
 ```
 
 ### Pack all necessary gems in the vendor folder
 
 ```yaml
-## pack all necessary gems in the vendor folder
+# Pack all necessary gems in the vendor folder
 cd src/gui/
 bundle package
 ```

@@ -1,0 +1,43 @@
+---
+name: gui-deployment
+
+releases:
+- name: gui
+  version: latest
+
+stemcells:
+- alias: default
+  os: ubuntu-xenial
+  version: latest
+
+update:
+  canaries: 1
+  max_in_flight: 1
+  canary_watch_time: 1000-30000
+  update_watch_time: 1000-30000
+
+instance_groups:
+- name: gui
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+
+  jobs:
+  - name: gui
+    release: gui
+    properties:
+      lexer:
+        host: localhost
+        port: 5000
+      gui:
+        host: localhost
+        port: 5000
+      calculator:
+        host: localhost
+        port: 5000
+      nginx:
+        host: localhost
+        port: 5000
