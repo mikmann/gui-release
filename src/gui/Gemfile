@@ -2,7 +2,7 @@
 
 source 'https://rubygems.org'
 
-gem 'erubis'
 gem 'httparty'
 gem 'json'
 gem 'sinatra'
+gem 'webmock'
