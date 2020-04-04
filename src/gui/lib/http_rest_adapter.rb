@@ -11,7 +11,9 @@ class HTTPRestAdapter
   attr_reader :base_url
 
   def initialize(base_url)
-    @base_url = base_url
+
+
+    @base_url = check_base_url!(base_url)
   end
 
   def http_get(url, body = nil)
@@ -21,7 +23,9 @@ class HTTPRestAdapter
     }
     params[:body] = body.to_json unless body.nil?
 
-    HTTParty.get("#{base_url}/#{url}", params)
+    response = HTTParty.get("#{base_url}/#{url}", params)
+    check_response!(response)
+    response
   end
 
   def http_post(url, body = nil)
@@ -32,7 +36,7 @@ class HTTPRestAdapter
     params[:body] = body.to_json unless body.nil?
 
     response = HTTParty.post("#{base_url}/#{url}", params)
-
+    check_response!(response)
     response
   end
 
@@ -41,7 +45,19 @@ class HTTPRestAdapter
   def headers_hash
     { 'Accept' => 'application/json', 'Content-Type' => 'application/json' }
   end
-end
 
-puts HTTPRestAdapter.new('http://localhost:4567').http_post('parser', 'tokenshallo')
-puts HTTPRestAdapter.new('http://localhost:4567').http_get('parser', 'tokens': %w[LPAR DIGIT])
+  def check_base_url!(base_url)
+    raise 'Not base url set' if base_url.nil?
+
+    base_url
+  end
+
+  def check_response!(result)
+    # only successful operation codes allowed
+    return if (200..299).include?(result.code)
+
+    # logger.error "Invalid result from API endpoint HTTP Return Code=#{result.code}"
+    # logger.error "Received error message: #{result['error']}" unless result['error'].nil?
+    raise "Status code was #{result.code}"
+  end
+end
