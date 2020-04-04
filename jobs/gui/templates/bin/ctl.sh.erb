@@ -1,0 +1,48 @@
+#!/bin/bash
+
+RUN_DIR=/var/vcap/sys/run/gui
+LOG_DIR=/var/vcap/sys/log/gui
+PIDFILE=${RUN_DIR}/pid
+
+
+# Lexer app specific
+export LEXER_HOST=<%= p('lexer.host') %>
+export LEXER_PORT=<%= p('lexer.port') %>
+export GUI_HOST=<%= p('gui.host') %>
+export GUI_PORT=<%= p('gui.port') %>
+export CALCULATOR_HOST=<%= p('calculator.host') %>
+export CALCULATOR_PORT=<%= p('calculator.port') %>
+export NGINX_HOST=<%= p('nginx.host') %>
+export NGINX_PORT=<%= p('nginx.port') %>
+
+
+case $1 in
+
+  start)
+    mkdir -p $RUN_DIR $LOG_DIR
+    chown -R vcap:vcap $RUN_DIR $LOG_DIR
+
+    echo $$ > $PIDFILE
+
+    cd /var/vcap/packages/gui
+
+    export PATH=/var/vcap/packages/ruby-2.6.5-r0.29.0/bin:$PATH
+
+    exec /var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle exec \
+      rackup --host ${gui_HOST} \
+             --port ${gui_PORT} \
+      >>  $LOG_DIR/gui.stdout.log \
+      2>> $LOG_DIR/gui.stderr.log
+
+    ;;
+
+  stop)
+    kill -9 `cat $PIDFILE`
+    rm -f $PIDFILE
+
+    ;;
+
+  *)
+    echo "Usage: ctl {start|stop}" ;;
+
+esac

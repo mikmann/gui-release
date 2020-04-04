@@ -1,0 +1,17 @@
+---
+iaas:
+  consul:
+    dnsmasq_ips:
+    - 172.28.35.20
+    - 172.28.36.20
+    - 172.28.37.20
+    dnsmasq:
+      upstream_nameservers:
+      - 109.234.108.234
+      - 109.234.109.234
+    consul_ips:
+    - 172.28.35.21
+    - 172.28.36.21
+    - 172.28.37.21
+    join_ip: 172.28.35.21
+    domain: consul.dsf2

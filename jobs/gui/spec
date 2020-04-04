@@ -1,0 +1,39 @@
+---
+name: gui
+
+templates:
+  bin/ctl.sh.erb: bin/ctl
+
+packages:
+  - ruby-2.6.5-r0.29.0
+  - gui
+
+properties:
+  lexer:
+    host:
+      description: "The hostname or IP address which the lexer app is running."
+      default: localhost
+    port:
+      description: "The port number which the ruby lexer app is listening."
+      default: 3000
+  gui:
+    host:
+      description: "The hostname or IP address which the GUI app is running."
+      default: localhost
+    port:
+      description: "The port number which the ruby GUI app is listening."
+      default: 2000
+  calculator:
+    host:
+      description: "The hostname or IP address which the calculator app is running."
+      default: localhost
+    port:
+      description: "The port number which the ruby calculator app is listening."
+      default: 4000
+  nginx:
+    host:
+      description: "The hostname or IP address which the NGINX app is running."
+      default: localhost
+    port:
+      description: "The port number which the ruby NGINX app is listening."
+      default: 8080
