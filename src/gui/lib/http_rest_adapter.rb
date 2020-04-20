@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
 require 'httparty'
-
+# TODO: http://localhost:4567 check if the url is valid
 #
 # Send a POST or GET request to particular endpoints
 #
@@ -23,7 +23,6 @@ class HTTPRestAdapter
       timeout: DEFAULT_TIMEOUT
     }
     params[:body] = body.to_json unless body.nil?
-
     response = HTTParty.get("#{base_url}/#{url}", params)
     check_response!(response)
     response
@@ -37,6 +36,18 @@ class HTTPRestAdapter
     params[:body] = body.to_json unless body.nil?
 
     response = HTTParty.post("#{base_url}/#{url}", params)
+    check_response!(response)
+    response
+  end
+
+  def http_delete(url, body = nil)
+    params = {
+      headers: headers_hash,
+      timeout: DEFAULT_TIMEOUT
+    }
+    params[:body] = body.to_json unless body.nil?
+    puts params.inspect
+    response = HTTParty.delete("#{base_url}/#{url}", params)
     check_response!(response)
     response
   end

@@ -2,7 +2,17 @@
 
 source 'https://rubygems.org'
 
+ruby '2.6.5'
+
 gem 'httparty'
 gem 'json'
 gem 'sinatra'
-gem 'webmock'
+
+group :development do
+  gem 'shotgun'
+end
+
+group :test do
+  gem 'rspec'
+  gem 'webmock'
+end

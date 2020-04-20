@@ -4,6 +4,8 @@ name: gui-deployment
 releases:
 - name: gui
   version: latest
+- name: database
+  version: latest
 
 stemcells:
 - alias: default
@@ -17,7 +19,7 @@ update:
   update_watch_time: 1000-30000
 
 instance_groups:
-- name: gui
+- name: services
   azs: [z2]
   instances: 1
   vm_type: nano
@@ -31,13 +33,23 @@ instance_groups:
     properties:
       lexer:
         host: localhost
-        port: 5000
+        port: 3000
       gui:
         host: localhost
         port: 5000
       calculator:
         host: localhost
-        port: 5000
+        port: 4000
+      database:
+        host: localhost
+        port: 6000
       nginx:
         host: localhost
-        port: 5000
+        port: 8080
+
+  - name: database
+    release: database
+    properties:
+      host: localhost
+      port: 6000
+
