@@ -1,0 +1,32 @@
+---
+name: nginx
+
+templates:
+  bin/ctl.sh: bin/ctl
+  config/nginx.conf: config/nginx.conf
+  config/upstream.conf: config/upstream.conf
+  nginx-error-pages/404.html: nginx-error-pages/404.html
+  nginx-error-pages/50x.html: nginx-error-pages/50x.html
+
+packages:
+- nginx-1.17.3
+
+properties:
+  nginx:
+    upstream_host:
+      description: 'Upstream host'
+      default: 127.0.0.1
+    upstream_port:
+      description: 'Upstream port'
+      default: 80
+  gui:
+    port:
+      description: "The port number which the ruby GUI app is listening."
+      default: 5000
+  consul:
+    dc:
+      description: "This defines the datacenter in which the agent is running."
+      default: dc1
+    domain:
+      description: "This defines the domain in which the agent is running."
+      default: consul.dsf2
