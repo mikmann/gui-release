@@ -5,15 +5,12 @@ LOG_DIR=/var/vcap/sys/log/gui
 PIDFILE=${RUN_DIR}/pid
 
 
-# Lexer app specific
-export LEXER_HOST=<%= p('lexer.host') %>
-export LEXER_PORT=<%= p('lexer.port') %>
+# Set environment variables
 export GUI_HOST=<%= p('gui.host') %>
 export GUI_PORT=<%= p('gui.port') %>
-export CALCULATOR_HOST=<%= p('calculator.host') %>
+export LEXER_PORT=<%= p('lexer.port') %>
 export CALCULATOR_PORT=<%= p('calculator.port') %>
-export NGINX_HOST=<%= p('nginx.host') %>
-export NGINX_PORT=<%= p('nginx.port') %>
+export NODE_ROUTE=<%= "#{spec.deployment}-#{spec.deployment}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
 
 
 case $1 in
@@ -31,6 +28,7 @@ case $1 in
     exec /var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle exec \
       rackup --host ${GUI_HOST} \
              --port ${GUI_PORT} \
+             --env production \
       >>  $LOG_DIR/gui.stdout.log \
       2>> $LOG_DIR/gui.stderr.log
 

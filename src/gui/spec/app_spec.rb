@@ -27,7 +27,6 @@ RSpec.describe 'GUI - Frontend' do
           .with(body: body_args.to_json)
           .to_return(body: body.to_json)
       end
-      it
     end
   end
 end

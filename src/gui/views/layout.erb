@@ -8,8 +8,8 @@
 
     <!-- Bootstrap CSS -->
     <!-- jQuery first, then Popper.js, then Bootstrap JS -->
-    <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
-    <link rel="stylesheet"  type="text/css" href="styles/styles.css">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+    <!--  <link rel="stylesheet"  type="text/css" href="styles/styles.css">   -->
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
 
     <style type="text/css">
@@ -24,16 +24,26 @@
             margin: 5px
        }
 
-       .not-alive {
+        .not-alive {
            opacity: 0.4;
-       }
+        }
 
-       .medium {
+        .medium {
             font-size: medium;
         }
 
-       .large {
+        .large {
             font-size: large;
+        }
+
+        .spacing {
+            letter-spacing: 2px;
+        }
+
+        #alert-database,
+        #alert-lexer,
+        #alert-calculator {
+            display: none;
         }
 
     </style>
@@ -50,7 +60,7 @@
 
          <% locals[:remote_services].each do |name, _url| %>
             <span id="<%= name %>-alive" class="h-space badge badge-<%= locals[:service_colors][name] %> medium"><%= name.capitalize %></span>
-         <% end %>%>
+         <% end %>
     </nav>
 
     <div class="container header-space">
@@ -62,10 +72,227 @@
     </div>
 
     <!-- Optional JavaScript -->
-        <script src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script>
+        <%# <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.8.1/jquery.min.js"></script> %>
         <script>window.jQuery || document.write('<script src="scripts/jquery.js"><\/script>')</script>
-        <script src="scripts/knockout.js"></script>
-        <script src="scripts/app.js"></script>
+        <script src="https://github.com/knockout/knockout/releases/download/v3.5.1/knockout-3.5.1.js"></script>
+        <%# <script src="scripts/app.js"></script> %>
+
+    <script>
+        class Task {
+            constructor(data) {
+                this.id = ko.observable(data.id);
+                this.expression = ko.observable(data.expression);
+                this.rpn = ko.observable(data.rpn);
+                this.result = ko.observable(data.result);
+                this.created_at = ko.observable(data.created_at);
+            }
+        }
+
+        class TaskViewModel {
+            constructor() {
+                var self = this;
+                // functions
+                self.showExpression = ko.observable(false);
+                self.showLexer = ko.observable(false);
+                self.showCalculator = ko.observable(false);
+                self.showResult = ko.observable(false);
+                self.showDatabase = ko.observable(false);
+
+                // object and properties
+                self.task = ko.observable();
+                self.tasks = ko.observableArray([]);
+                self.expression = ko.observable("((20+606)*(3*20)/5)");
+                self.rpn = ko.observable("");
+                self.result = ko.observable("");
+
+                self.addVisible = function(object) {
+                    if (object == "expression")
+                      self.showExpression(true);
+                    else if (object == "lexer")
+                        this.showLexer(true);
+                    else if (object == "calculator")
+                        this.showCalculator(true);
+                    else if (object == "database")
+                        this.showDatabase(true);
+                };
+
+                self.removeVisible = function(object) {
+                    if (object == "lexer")
+                        this.showLexer(false);
+                    else if (object == "calculator")
+                        this.showCalculator(false);
+                    else if (object == "database")
+                        this.showDatabase(false);
+                    else {
+                        this.showExpression(false);
+                        this.showLexer(false);
+                        this.showCalculator(false);
+                        this.showDatabase(false);
+                    }
+                };
+
+                self.sendLexer = function(url) {
+                    var expression = this.expression();
+                    var rpn = this.rpn;
+                    self.sendRequest("lexer", { expression: expression }, rpn, url, "POST")
+                };
+
+                self.sendCalculator = function(url) {
+                    var rpn = this.rpn();
+                    var result = this.result;
+                    self.sendRequest("calculator", { rpn: rpn }, result, url, "POST")
+                };
+
+               self.sendLexer = function() {
+                    var expression = this.expression();
+                    var rpn = this.rpn;
+                    self.sendRequest("lexer", { expression: expression }, rpn, "POST")
+                };
+
+                self.sendCalculator = function() {
+                    var rpn = this.rpn();
+                    var result = this.result;
+                    self.sendRequest("calculator", { rpn: rpn }, result, "POST")
+                };
+
+                self.sendRequest = function(path, input, output, method) {
+                    this.addVisible(path);
+                    var request = $.ajax({
+                        url: "/" + path,
+                        dataType: "json",
+                        type: method,
+                        data: input,
+                    });
+
+                    request.done(function(data) {
+                        output(data);
+                        var result = { success: data }
+                        console.log(result);
+                    });
+
+                    request.fail(function(jqXHR) {
+                        var result = { status: jqXHR.status, error: jqXHR.statusText }
+                        console.log(result);
+                    });
+                };
+
+                self.getTasks = function() {
+                    var request = $.ajax({
+                        url: "<%= locals[:public_route] %>" + "/database/tasks",
+                        dataType: "json",
+                        type: "GET",
+                        data: {},
+                    });
+
+                    request.done(function(data) {
+                        var data = JSON.parse(data)
+                        var tasks = $.map(data, function(item) {
+                            return new Task(item);
+                        });
+                        self.tasks(tasks);
+                        var result = { success: data }
+                        console.log(result);
+                    });
+
+                    request.fail(function(jqXHR) {
+                        var result = { status: jqXHR.status, error: jqXHR.statusText }
+                        console.log(result);
+                    });
+                };
+
+                self.deleteTask = function(task) {
+                    // Convert task into an JS object
+                    var jsTask = ko.toJS(task);
+                    self.tasks.remove(task);
+                    var request = $.ajax({
+                        url: "/database/tasks/" + jsTask.id,
+                        dataType: "json",
+                        type: "DELETE",
+                        data: { id: jsTask.id },
+                    });
+
+                    request.done(function(data) {
+                        var result = { success: data }
+                        console.log(result);
+                    });
+
+                    request.fail(function(jqXHR) {
+                        var result = { status: jqXHR.status, error: jqXHR.statusText }
+                        console.log(result);
+                    });
+                };
+
+                self.sendDatabase = function() {
+                    var task = new Task({
+                        expression: this.expression(),
+                        rpn: this.rpn(),
+                        result: this.result()
+                    });
+                    this.addVisible("database");
+                    var request = $.ajax({
+                        dataType: "json",
+                        type: "POST",
+                        data: { task: task },
+                        url: "/database/tasks",
+                    });
+
+                    request.done(function(data) {
+                        var result = { success: data }
+                        self.getTasks();
+                        self.removeVisible('all');
+                        console.log(result);
+
+                    });
+
+                    request.fail(function(jqXHR) {
+                        var result = { status: jqXHR.status, error: jqXHR.statusText }
+                        console.log(result);
+
+                    });
+                }
+
+                self.isAlive = function() {
+                    var request = $.ajax({
+                        dataType: "json",
+                        type: "GET",
+                        url: "/is_alive",
+                    });
+
+                    request.done(function(data) {
+                        data.forEach(element => {
+                            if (element.alive) {
+                                if (element.service == "database" && self.tasks() == null) {
+                                    self.getTasks();
+                                }
+                                $("#" + element.service + "-alive").removeClass("not-alive");
+                                $("#alert-" + element.service).css("display", "none");
+
+                            } else {
+                                if (element.service == "database") {
+                                    self.tasks(null);
+                                }
+                                $("#" + element.service + "-alive").addClass("not-alive");
+                                $("#alert-" + element.service).css("display", "block");
+                            }
+                        });
+                        var result = { states: data };
+                        console.log(result);
+                        setTimeout(self.isAlive, 15000);
+                    });
+
+                    request.fail(function(jqXHR) {
+                        var result = { status: jqXHR.status, error: jqXHR.statusText }
+                        console.log(result);
+                        setTimeout(self.isAlive, 15000);
+                    });
+                }
+                self.isAlive();
+                self.getTasks();
+            }
+        }
+        ko.applyBindings(new TaskViewModel());
+    </script>
+
 </body>
 
 </html>

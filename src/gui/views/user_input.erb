@@ -1,5 +1,8 @@
 <% services = locals[:remote_services] %>
 
+<div class="row">
+<div class="col-sm">
+
 <section id="tasktable">
   <table class="table table-sm table-hover table-striped">
     <thead class="thead-dark">
@@ -24,7 +27,7 @@
     <tbody class="table-striped">
         <!-- ko foreach: tasks -->
         <tr>
-            <th scope="row" data-bind="text: id"></td>
+            <th scope="row" data-bind="text: id"></th>
             <td data-bind="text: expression"></td>
             <td data-bind="text: rpn"></td>
             <td data-bind="text: result"></td>
@@ -33,6 +36,17 @@
         </tr>
         <!-- /ko -->
     </tbody>
+
+    <thead class="thead-dark">
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Expression</th>
+            <th scope="col" data-bind="click: function(){ sort('created_at') }">RPN</th>
+            <th scope="col" data-bind="click: function(){ sort('created_at') }">Result</th>
+            <th scope="col" data-bind="click: function(){ sort('updated_at') }">Date Modified</th>
+           <th scope="col"></th>
+        </tr>
+    </thead>
     <div>
   </table>
 
@@ -41,17 +55,36 @@
  </div>
 </section>
 
+</div>
+</div>
+<hr />
+<div class="row">
+  <div class="col-sm-4"></div>
+  <div class="col-sm-4">
+    <button type="button" class="btn btn-warning large spacing text-dark" data-bind="click:function() { addVisible('expression') }">
+        <strong> ADD A NEW EXPRESSION</strong>
+        </button>
+  </div>
+  <div class="col-sm-4"></div>
+</div>
+
+    <div id="alert-lexer" class="alert alert-danger" role="alert">
+        The <b>Lexer</b> is not available! Please, check if the service is running on <b><%= services[:lexer] %></b>.
+    </div>
+
+<div class="row">
+<div class="col-sm">
 
 <form id="sendDatabase" data-bind="submit: sendDatabase">
 
-    <div class="card mb-12 bg-success text-white rounded">
+    <div class="card mb-12 bg-success text-white rounded" data-bind="visible: showExpression">
         <div class="card-header">
             <div class="row">
                 <div class="col-md-10">
                     <span class="badge badge-dark rounded large">Expression</span>
                 </div>
                 <div class="col-md-2">
-                    <input type="button" data-bind="click:function() { sendLexer('<%=services[:gui] %>') }" value="Send to Lexer" class="btn btn-sm btn-dark rounded" />
+                    <input type="button" data-bind="click:function() { sendLexer() }" value="Send to Lexer" class="btn btn-sm btn-dark rounded" />
                 </div>
             </div>
         </div>
@@ -69,8 +102,6 @@
         </div>
     </div>
 
-    <br />
-
     <div id="alert-lexer" class="alert alert-danger" role="alert">
         The <b>Lexer</b> is not available! Please, check if the service is running on <b><%= services[:lexer] %></b>.
     </div>
@@ -82,7 +113,7 @@
                     <span class="badge badge-dark rounded large">Lexer</span>
                 </div>
                 <div class="col-md-2">
-                    <input type="button" data-bind="click:function() { sendCalculator('<%= services[:gui] %>') }" value="Send to Calculator" class="btn btn-sm btn-dark rounded" />
+                    <input type="button" data-bind="click:function() { sendCalculator() }" value="Send to Calculator" class="btn btn-sm btn-dark rounded" />
                 </div>
             </div>
         </div>
@@ -100,8 +131,6 @@
         </div>
     </div>
 
-    <br />
-
     <div id="alert-calculator" class="alert alert-danger" role="alert">
         The <b>Calculator</b> is not available! Please, check if the service is running on <b><%= services[:calculator] %></b>.
     </div>
@@ -113,7 +142,7 @@
                     <span class="badge badge-dark rounded large">Calculator</span>
                 </div>
                 <div class="col-md-2">
-                    <input type="submit" data-bind="click:function() { sendDatabase() }" value="Send to Database" class="btn btn-sm btn-dark rounded" />
+                    <input type="submit" data-bind="click:function() { sendDatabase('<%= services[:database] %>') }" value="Send to Database" class="btn btn-sm btn-dark rounded" />
                 </div>
             </div>
         </div>
@@ -131,29 +160,5 @@
     </div>
 </form>
 
-<%# <hr />
-
-<div class="card mb-12 bg-warning rounded" data-bind="visible: showDatabase">
-    <div class="card-header">
-        <div class="row">
-            <div class="col-md-10">
-                <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Database&nbsp; &nbsp; </span>
-            </div>
-            <div class="col-md-2">
-                <input type="button" data-bind="click:function() { getTasks() }" value="Database" class="btn btn-dark rounded-pill" />
-            </div>
-        </div>
-    </div>
-    <div class="card-body">
-        <h5 class="card-title">Content of the Database</h5>
-        <p class="card-text">
-            <div class="row">
-                <div class="col-md-12">
-                    <div style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
-                        <input style="width:100%"  data-bind="" placeholder="" /></div>
-                </div>
-            </div>
-        </p>
-    </div>
-</div> %>
-
+</div>
+</div>
