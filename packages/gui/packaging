@@ -1,14 +1,22 @@
 set -e -x
 
-cp -a gui/* ${BOSH_INSTALL_TARGET}
+package_name=$(echo ${BOSH_INSTALL_TARGET} | cut -d "/" -f5)
+packages_dir=$(echo ${BOSH_INSTALL_TARGET} | cut -d "/" -f1-4)
+
+cp -a ${package_name}/* ${BOSH_INSTALL_TARGET}
+
+cd ${packages_dir}
+ruby_version=$(find ruby-*)
+
+if [[ $? != 0 ]]
+then
+  echo "No Ruby Version found"
+  exit 1
+fi
+
+source ${packages_dir}/${ruby_version}/bosh/compile.env
 
 cd ${BOSH_INSTALL_TARGET}
 
-source /var/vcap/packages/ruby-2.6.5-r0.29.0/bosh/compile.env
-bundle_cmd=/var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle
-
-# ${bundle_cmd} config set deployment 'true'
-# ${bundle_cmd} config set local 'true'
-# ${bundle_cmd} install
-
-${bundle_cmd} install --local --deployment --without development test
+bosh_bundle_local --gemfile="${BOSH_INSTALL_TARGET}/Gemfile"
+bosh_generate_runtime_env

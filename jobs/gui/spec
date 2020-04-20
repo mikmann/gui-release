@@ -8,10 +8,6 @@ packages:
   - ruby-2.6.5-r0.29.0
   - gui
 
-consumes:
-- name: database_properties
-  type: database_properties
-
 properties:
   gui:
     host:
@@ -19,25 +15,16 @@ properties:
       default: localhost
     port:
       description: "The port number which the ruby GUI app is listening."
-      default: 2000
+      default: 5000
   lexer:
-    host:
-      description: "The hostname or IP address which the lexer app is running."
-      default: localhost
     port:
       description: "The port number which the ruby lexer app is listening."
       default: 3000
   calculator:
-    host:
-      description: "The hostname or IP address which the calculator app is running."
-      default: localhost
     port:
       description: "The port number which the ruby calculator app is listening."
       default: 4000
   database:
-    host:
-      description: "The hostname or IP address which the database app is running."
-     default: localhost
     port:
       description: "The port number which the ruby database app is listening."
       default: 6000
@@ -48,3 +35,10 @@ properties:
     port:
       description: "The port number which the ruby NGINX app is listening."
       default: 8080
+  consul:
+    dc:
+      description: "Consul DC"
+      default: dc1
+    domain:
+      description: "Consul Domain"
+      default: consul.dsf2

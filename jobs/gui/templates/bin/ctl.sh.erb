@@ -1,44 +1,53 @@
 #!/bin/bash
 
-RUN_DIR=/var/vcap/sys/run/gui
-LOG_DIR=/var/vcap/sys/log/gui
-PIDFILE=${RUN_DIR}/pid
+job_name=gui
+run_dir=/var/vcap/sys/run/${job_name}
+log_dir=/var/vcap/sys/log/${job_name}
+pid_file=${run_dir}/pid
+packages_dir=/var/vcap/packages
 
-
-# Lexer app specific
-export LEXER_HOST=<%= p('lexer.host') %>
-export LEXER_PORT=<%= p('lexer.port') %>
+# Set environment variables
 export GUI_HOST=<%= p('gui.host') %>
 export GUI_PORT=<%= p('gui.port') %>
-export CALCULATOR_HOST=<%= p('calculator.host') %>
+export LEXER_PORT=<%= p('lexer.port') %>
 export CALCULATOR_PORT=<%= p('calculator.port') %>
-export NGINX_HOST=<%= p('nginx.host') %>
-export NGINX_PORT=<%= p('nginx.port') %>
-
+export NODE_ROUTE=<%= "#{spec.deployment}-#{spec.deployment}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
 
 case $1 in
 
   start)
-    mkdir -p $RUN_DIR $LOG_DIR
-    chown -R vcap:vcap $RUN_DIR $LOG_DIR
+    cd ${packages_dir}
+    ruby_version=$(find ruby-*)
 
-    echo $$ > $PIDFILE
+    if [[ $? != 0 ]]
+    then
+      echo "No Ruby Version found"
+      exit 1
+    fi
 
-    cd /var/vcap/packages/gui
+    source ${packages_dir}/${ruby_version}/bosh/runtime.env
 
-    export PATH=/var/vcap/packages/ruby-2.6.5-r0.29.0/bin:$PATH
+    mkdir -p ${run_dir} ${log_dir}
+    chown -R vcap:vcap ${run_dir} ${log_dir}
 
-    exec /var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle exec \
+    echo $$ > ${pid_file}
+
+    cd ${packages_dir}/${job_name}
+
+    exec bundle exec \
       rackup --host ${GUI_HOST} \
              --port ${GUI_PORT} \
-      >>  $LOG_DIR/gui.stdout.log \
-      2>> $LOG_DIR/gui.stderr.log
+      >>  ${log_dir}/${job_name}.stdout.log \
+      2>> ${log_dir}/${job_name}.stderr.log
 
     ;;
 
   stop)
-    kill -9 `cat $PIDFILE`
-    rm -f $PIDFILE
+    kill -9 `cat ${pid_file}`
+    rm -f ${pid_file}
+
+    pid=$(ps aux | grep ${job_name}/gem_home/ | cut -d " " -f6 | head -n 1)
+    kill -9 ${pid}
 
     ;;
 
