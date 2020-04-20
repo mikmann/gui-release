@@ -8,14 +8,11 @@ packages:
   - ruby-2.6.5-r0.29.0
   - gui
 
+consumes:
+- name: database_properties
+  type: database_properties
+
 properties:
-  lexer:
-    host:
-      description: "The hostname or IP address which the lexer app is running."
-      default: localhost
-    port:
-      description: "The port number which the ruby lexer app is listening."
-      default: 3000
   gui:
     host:
       description: "The hostname or IP address which the GUI app is running."
@@ -23,6 +20,13 @@ properties:
     port:
       description: "The port number which the ruby GUI app is listening."
       default: 2000
+  lexer:
+    host:
+      description: "The hostname or IP address which the lexer app is running."
+      default: localhost
+    port:
+      description: "The port number which the ruby lexer app is listening."
+      default: 3000
   calculator:
     host:
       description: "The hostname or IP address which the calculator app is running."
@@ -30,6 +34,13 @@ properties:
     port:
       description: "The port number which the ruby calculator app is listening."
       default: 4000
+  database:
+    host:
+      description: "The hostname or IP address which the database app is running."
+     default: localhost
+    port:
+      description: "The port number which the ruby database app is listening."
+      default: 6000
   nginx:
     host:
       description: "The hostname or IP address which the NGINX app is running."

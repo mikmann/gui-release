@@ -1,80 +1,159 @@
+<% services = locals[:remote_services] %>
 
-<div class="card mb-12 bg-info rounded">
-  <div class="card-header">
-    <div class="row">
-      <div class="col-md-10">
-        <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Lexer&nbsp; &nbsp; </span>
-      </div>
-      <div class="col-md-2">
-        <a href="/calculator/rpn?name=<%= name %>%" class="btn btn-dark rounded-pill">Send Calculator</a>
-      </div>
+<section id="tasktable">
+  <table class="table table-sm table-hover table-striped">
+    <thead class="thead-dark">
+        <tr>
+            <th colspan="2">
+              <span class="h-space badge badge-warning"><b class="medium">Database</b></span>
+            </th>
+            <th colspan="4">
+                <span class="h-space badge badge-warning"><b class="larger"><%= services[:database] %></b></span>
+            </th>
+        </tr>
+        <tr>
+            <th scope="col">#</th>
+            <th scope="col">Expression</th>
+            <th scope="col" data-bind="click: function(){ sort('created_at') }">RPN</th>
+            <th scope="col" data-bind="click: function(){ sort('created_at') }">Result</th>
+            <th scope="col" data-bind="click: function(){ sort('updated_at') }">Date Modified</th>
+            <th scope="col"></th>
+        </tr>
+    </thead>
+    <div id="show-database">
+    <tbody class="table-striped">
+        <!-- ko foreach: tasks -->
+        <tr>
+            <th scope="row" data-bind="text: id"></td>
+            <td data-bind="text: expression"></td>
+            <td data-bind="text: rpn"></td>
+            <td data-bind="text: result"></td>
+            <td data-bind="text: created_at"></td>
+            <td data-bind="click: $parent.deleteTask"><a class="btn-sm btn-dark" href="">delete</a>
+        </tr>
+        <!-- /ko -->
+    </tbody>
+    <div>
+  </table>
+
+  <div id="alert-database" class="alert alert-danger" role="alert">
+      The <b>Database</b> is not available! Please, check if the service is running on <b><%= services[:database] %></b>.
+ </div>
+</section>
+
+
+<form id="sendDatabase" data-bind="submit: sendDatabase">
+
+    <div class="card mb-12 bg-success text-white rounded">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-10">
+                    <span class="badge badge-dark rounded large">Expression</span>
+                </div>
+                <div class="col-md-2">
+                    <input type="button" data-bind="click:function() { sendLexer('<%=services[:gui] %>') }" value="Send to Lexer" class="btn btn-sm btn-dark rounded" />
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-title medium">
+                Please enter a mathematical expression here, which can then be sent to a remote Lexer service.
+                The lexer reads the given expression and converts it into an <b>inverted Polish notation</b>.
+            </p>
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+                        <input  style="width:100%" data-bind="value: expression" placeholder="((2+6)*(3*2)/5)" /></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="card-body">
-    <h5 class="card-title">The lexer reads the given expression and converts it into an inverted Polish notation.</h5>
-    <p class="card-text">
-      <div class="row">
-      <div class="col-md-12">
-        <div  style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
-          <textarea style="width:100%"><%= name %></textarea></div>
-      </div>
-      </div>
-    </p>
 
-  </div>
-</div>
+    <br />
 
-<br />
-
-<div class="card mb-12 bg-danger rounded">
-  <div class="card-header">
-    <div class="row">
-      <div class="col-md-10">
-        <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Calculator&nbsp; &nbsp; </span>
-      </div>
-      <div class="col-md-2">
-        <a href="/calculator/input" class="btn btn-dark rounded-pill">Send to DB</a>
-      </div>
+    <div id="alert-lexer" class="alert alert-danger" role="alert">
+        The <b>Lexer</b> is not available! Please, check if the service is running on <b><%= services[:lexer] %></b>.
     </div>
-  </div>
-  <div class="card-body">
-    <h5 class="card-title">The calculator reads the given inverted Polish notation and calculate the result of this expression.</h5>
-    <p class="card-text">
-      <div class="row">
-      <div class="col-md-12">
-        <div  style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
-          <textarea style="width:100%"><%= name %></textarea></div>
-      </div>
-      </div>
-    </p>
 
-  </div>
-</div>
-
-<br />
-
-<div class="card mb-12 bg-warning rounded">
-  <div class="card-header">
-    <div class="row">
-      <div class="col-md-10">
-        <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Database&nbsp; &nbsp; </span>
-      </div>
-      <div class="col-md-2">
-        <a href="/calculator/input" class="btn btn-dark rounded-pill">Send to statistic</a>
-      </div>
+    <div class="card mb-12 bg-info text-white rounded" data-bind="visible: showLexer">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-10">
+                    <span class="badge badge-dark rounded large">Lexer</span>
+                </div>
+                <div class="col-md-2">
+                    <input type="button" data-bind="click:function() { sendCalculator('<%= services[:gui] %>') }" value="Send to Calculator" class="btn btn-sm btn-dark rounded" />
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-title medium">
+                The lexer returns the <b>inverted Polish notation</b> of the sent expression.
+                Now you can send this result to the Service Calculator.
+                </p>
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+                        <input id="rpn" style="width:100%" data-bind="value: rpn" placeholder="" /></div>
+                </div>
+            </div>
+        </div>
     </div>
-  </div>
-  <div class="card-body">
-    <h5 class="card-title">The calculator reads the given inverted Polish notation and calculate the result of this expression.</h5>
-    <p class="card-text">
-      <div class="row">
-      <div class="col-md-12">
-        <div  style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
-          <textarea style="width:100%"><%= name %></textarea></div>
-      </div>
-      </div>
-    </p>
 
-  </div>
-</div>
+    <br />
+
+    <div id="alert-calculator" class="alert alert-danger" role="alert">
+        The <b>Calculator</b> is not available! Please, check if the service is running on <b><%= services[:calculator] %></b>.
+    </div>
+
+    <div class="card mb-12 bg-danger text-white rounded" data-bind="visible: showCalculator">
+        <div class="card-header">
+            <div class="row">
+                <div class="col-md-10">
+                    <span class="badge badge-dark rounded large">Calculator</span>
+                </div>
+                <div class="col-md-2">
+                    <input type="submit" data-bind="click:function() { sendDatabase() }" value="Send to Database" class="btn btn-sm btn-dark rounded" />
+                </div>
+            </div>
+        </div>
+        <div class="card-body">
+            <p class="card-title">
+                The calculator reads the given inverted Polish notation and calculate the result of this expression.
+            </p>
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+                        <input style="width:100%"  data-bind="value: result" placeholder="" /></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</form>
+
+<%# <hr />
+
+<div class="card mb-12 bg-warning rounded" data-bind="visible: showDatabase">
+    <div class="card-header">
+        <div class="row">
+            <div class="col-md-10">
+                <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Database&nbsp; &nbsp; </span>
+            </div>
+            <div class="col-md-2">
+                <input type="button" data-bind="click:function() { getTasks() }" value="Database" class="btn btn-dark rounded-pill" />
+            </div>
+        </div>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Content of the Database</h5>
+        <p class="card-text">
+            <div class="row">
+                <div class="col-md-12">
+                    <div style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
+                        <input style="width:100%"  data-bind="" placeholder="" /></div>
+                </div>
+            </div>
+        </p>
+    </div>
+</div> %>
 
