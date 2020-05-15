@@ -37,7 +37,7 @@ properties:
   database:
     host:
       description: "The hostname or IP address which the database app is running."
-     default: localhost
+      default: localhost
     port:
       description: "The port number which the ruby database app is listening."
       default: 6000

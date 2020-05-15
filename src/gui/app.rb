@@ -4,7 +4,6 @@ require 'rubygems'
 require 'bundler'
 require 'sinatra'
 require 'json'
-require 'Date'
 require_relative 'lib/http_rest_adapter'
 
 # Set environment variables
@@ -68,6 +67,7 @@ get '/is_alive' do
 end
 
 post '/lexer' do
+  puts params
   expression = params[:expression]
   puts expression
   rpn = HTTPRestAdapter.new("http://#{LEXER_HOST}:#{LEXER_PORT}").http_get('lexer', expression)

@@ -1,0 +1,13 @@
+current directory: /Users/mikemann/myself/bosh_releases/boshreleases/gui-boshrelease/src/gui/vendor/cache/ruby/2.6.0/gems/json-2.3.0/ext/json
+/Users/mikemann/.rvm/rubies/ruby-2.6.5/bin/ruby -I /Users/mikemann/.rvm/rubies/ruby-2.6.5/lib/ruby/site_ruby/2.6.0 -r ./siteconf20200517-95362-2564wi.rb extconf.rb
+creating Makefile
+
+current directory: /Users/mikemann/myself/bosh_releases/boshreleases/gui-boshrelease/src/gui/vendor/cache/ruby/2.6.0/gems/json-2.3.0/ext/json
+make "DESTDIR=" clean
+
+current directory: /Users/mikemann/myself/bosh_releases/boshreleases/gui-boshrelease/src/gui/vendor/cache/ruby/2.6.0/gems/json-2.3.0/ext/json
+make "DESTDIR="
+make: Nothing to be done for `all'.
+
+current directory: /Users/mikemann/myself/bosh_releases/boshreleases/gui-boshrelease/src/gui/vendor/cache/ruby/2.6.0/gems/json-2.3.0/ext/json
+make "DESTDIR=" install
