@@ -4,6 +4,7 @@ dev_releases
 releases/*.tgz
 releases/**/*.tgz
 /src/gui/spec/examples.txt
+/src/gui/vendor/cache/ruby
 .dev_builds
 .final_builds/jobs/**/*.tgz
 .final_builds/packages/**/*.tgz

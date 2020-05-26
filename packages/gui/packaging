@@ -5,11 +5,10 @@ cp -a gui/* ${BOSH_INSTALL_TARGET}
 cd ${BOSH_INSTALL_TARGET}
 
 source /var/vcap/packages/ruby-2.6.5-r0.29.0/bosh/compile.env
-bundle_cmd=/var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle
 
-# bundle config set local 'true'
-# bundle config set deployment 'true'
-# bundle config set without 'development test'
-# bundle install
+bundle config --local set local 'true'
+bundle config --local set deployment 'true'
+bundle config --local without 'development test'
+bundle install
 
-${bundle_cmd} install --local --deployment --without development test
+# bundle install --local --deployment --without development test
