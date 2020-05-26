@@ -24,7 +24,7 @@
     <tbody class="table-striped">
         <!-- ko foreach: tasks -->
         <tr>
-            <th scope="row" data-bind="text: id"></td>
+            <th scope="row" data-bind="text: id"></th>
             <td data-bind="text: expression"></td>
             <td data-bind="text: rpn"></td>
             <td data-bind="text: result"></td>
@@ -51,7 +51,7 @@
                     <span class="badge badge-dark rounded large">Expression</span>
                 </div>
                 <div class="col-md-2">
-                    <input type="button" data-bind="click:function() { sendLexer('<%=services[:gui] %>') }" value="Send to Lexer" class="btn btn-sm btn-dark rounded" />
+                    <input type="button" data-bind="click:function() { sendLexer() }" value="Send to Lexer" class="btn btn-sm btn-dark rounded" />
                 </div>
             </div>
         </div>
@@ -82,7 +82,7 @@
                     <span class="badge badge-dark rounded large">Lexer</span>
                 </div>
                 <div class="col-md-2">
-                    <input type="button" data-bind="click:function() { sendCalculator('<%= services[:gui] %>') }" value="Send to Calculator" class="btn btn-sm btn-dark rounded" />
+                    <input type="button" data-bind="click:function() { sendCalculator() }" value="Send to Calculator" class="btn btn-sm btn-dark rounded" />
                 </div>
             </div>
         </div>
@@ -113,7 +113,7 @@
                     <span class="badge badge-dark rounded large">Calculator</span>
                 </div>
                 <div class="col-md-2">
-                    <input type="submit" data-bind="click:function() { sendDatabase() }" value="Send to Database" class="btn btn-sm btn-dark rounded" />
+                    <input type="submit" data-bind="click:function() { sendDatabase('<%= services[:database] %>') }" value="Send to Database" class="btn btn-sm btn-dark rounded" />
                 </div>
             </div>
         </div>
@@ -130,30 +130,3 @@
         </div>
     </div>
 </form>
-
-<%# <hr />
-
-<div class="card mb-12 bg-warning rounded" data-bind="visible: showDatabase">
-    <div class="card-header">
-        <div class="row">
-            <div class="col-md-10">
-                <span class="badge badge-dark rounded-pill">&nbsp; &nbsp; Database&nbsp; &nbsp; </span>
-            </div>
-            <div class="col-md-2">
-                <input type="button" data-bind="click:function() { getTasks() }" value="Database" class="btn btn-dark rounded-pill" />
-            </div>
-        </div>
-    </div>
-    <div class="card-body">
-        <h5 class="card-title">Content of the Database</h5>
-        <p class="card-text">
-            <div class="row">
-                <div class="col-md-12">
-                    <div style="font-size: 11pt; border: 1px solid black; padding:4px 4px; line-height: 14pt" class="col-md-12 badge badge-light">
-                        <input style="width:100%"  data-bind="" placeholder="" /></div>
-                </div>
-            </div>
-        </p>
-    </div>
-</div> %>
-

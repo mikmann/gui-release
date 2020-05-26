@@ -7,8 +7,9 @@ cd ${BOSH_INSTALL_TARGET}
 source /var/vcap/packages/ruby-2.6.5-r0.29.0/bosh/compile.env
 bundle_cmd=/var/vcap/packages/ruby-2.6.5-r0.29.0/bin/bundle
 
-# ${bundle_cmd} config set deployment 'true'
-# ${bundle_cmd} config set local 'true'
-# ${bundle_cmd} install
+# bundle config set local 'true'
+# bundle config set deployment 'true'
+# bundle config set without 'development test'
+# bundle install
 
 ${bundle_cmd} install --local --deployment --without development test
