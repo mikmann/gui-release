@@ -1,0 +1,1884 @@
+features:
+  randomize_az_placement: true
+instance_groups:
+- azs:
+  - z3
+  - z1
+  - z2
+  instances: 1
+  jobs:
+  - consumes:
+      consul_nodes: nil
+    name: consul
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: spi
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: a9s-consul
+  - name: redis-spi
+    properties:
+      backup-agent:
+        endpoint:
+          password: ((/redis_service_backup_agent_password))
+          port: 3000
+          username: ((/redis_service_backup_agent_username))
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: spi
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+      redis-spi:
+        dashboard:
+          domain: system.a9s-ds-concourse.a9s-ops.de
+          hostname: redis-ms-1589963251
+        endpoint:
+          password: ((redis_service_spi_password))
+          port: 3000
+          username: admin
+    release: redis-spi
+  name: spi
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: nano
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 1
+  jobs:
+  - consumes:
+      consul_nodes: nil
+    name: anynines-service-broker
+    properties:
+      anynines_service_broker:
+        authentication:
+          http_auth_password: ((/redis_service_broker_password))
+          http_auth_username: admin
+        billing:
+          api_endpoint: https://usage.anynines.com
+          password: public-s3cr3t
+          sync_interval_in_minutes: 60
+          username: cf_collector
+        bosh_deployer:
+          api_endpoint: http://redis-ms-1589963251-deployer.service.dc1.consul.dsf2:3000
+          password: ((/redis_service_deployer_password))
+          username: admin
+        database:
+          database_name: redis-broker-ms-1589963251
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_redisbroker_password))
+          port: 5432
+          user_name: redisbroker
+        encryption:
+          old_salt: ((redis_service_broker_encryption_salt_old))
+          salt: ((redis_service_broker_encryption_salt))
+        jobs:
+          update_instances_locked_state_interval: 0
+        port: 3000
+        secret_key_base: ((redis_service_broker_secret_key_base))
+        service_adapter:
+          api_endpoint: http://redis-ms-1589963251-spi.service.dc1.consul.dsf2:3000
+          name: Anynines::ServiceAdapters::ExternalSpi
+          password: ((redis_service_spi_password))
+          username: admin
+        service_hostname_suffix: .node.dc1.consul.dsf2
+        services:
+        - bindable: true
+          dashboard_client:
+            id: redis-ms-1589963251-client-id
+            redirect_uri: https://redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+            secret: ((/a9s_redisdashboard_client_secret))
+          description: This is a service creating and managing dedicated Redis service
+            instances, powered by the anynines Service Framework
+          documentation_url: https://www.anynines.com
+          guid: 9bdf0de6-5477-4039-8c0b-b07ecf6a0e95
+          label: a9s-redis
+          metadata:
+            displayName: a9s Redis 3.2
+            documentationUrl: https://www.anynines.com
+            shareable: true
+            supportUrl: https://dssupport.anynines.com
+          name: a9s-redis32-ms-1589963251
+          plans:
+            redis-cluster-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-big
+                vm_type: large
+              description: a big cluster deployment
+              free: true
+              guid: 2681b843-0bf2-4463-83ce-6cf906ca95f8
+              migration_paths: []
+              service_deployment_prefix: rg
+              template_name: redis-cluster-big
+              template_name_v2: redis-cluster
+            redis-cluster-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-medium
+                vm_type: medium
+              description: a medium cluster deployment
+              free: true
+              guid: b5a54b9b-62ea-46b9-a916-f329a96af142
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-cluster-medium
+              template_name_v2: redis-cluster
+            redis-cluster-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-small
+                vm_type: small
+              description: a small cluster deployment
+              free: true
+              guid: ae50273b-a29e-4a75-b3f4-6074bdd62142
+              migration_paths:
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-cluster-small
+              template_name_v2: redis-cluster
+            redis-single-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-big
+                vm_type: large
+              description: a big single instance
+              free: true
+              guid: 564ea9e0-bbae-401c-b19a-5b5537b32a99
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-big
+              template_name_v2: redis-single
+            redis-single-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-medium
+                vm_type: medium
+              description: a medium instance
+              free: true
+              guid: c6bc2f21-e95a-48ef-b536-a83b0210527c
+              migration_paths:
+              - redis-single-big
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-medium
+              template_name_v2: redis-single
+            redis-single-nano:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-nano
+                vm_type: nano
+              description: a single instance
+              free: true
+              guid: e75e6ece-44b8-4059-bde0-2923ed84dc03
+              migration_paths:
+              - redis-single-small
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-nano
+              template_name_v2: redis-single-no-logging
+            redis-single-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-small
+                vm_type: small
+              description: a single instance
+              free: true
+              guid: f919850e-1521-4a14-b794-5d52cfdd9298
+              migration_paths:
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-small
+              template_name_v2: redis-single
+          requires: []
+          tags:
+          - data structure store
+          - database
+          - cache
+          - message broker
+          version: 3.2
+        - bindable: true
+          dashboard_client:
+            id: 5105546f-146e-4e7a-9aef-c266e59de7dd
+            redirect_uri: https://redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+            secret: ((/a9s_redisdashboard_client_secret))
+          description: This is a service creating and managing dedicated Redis service
+            instances, powered by the anynines Service Framework
+          documentation_url: https://www.anynines.com
+          guid: 38114d31-9ea4-486e-8c38-0725f3ad4979
+          label: a9s-redis
+          metadata:
+            displayName: a9s Redis 4.0
+            documentationUrl: https://www.anynines.com
+            shareable: true
+            supportUrl: https://dssupport.anynines.com
+          name: a9s-redis40-ms-1589963251
+          plans:
+            redis-cluster-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-big
+                vm_type: large
+              description: a big cluster deployment
+              free: true
+              guid: d3467660-360a-45e2-a7cd-8e6a7716e5ca
+              migration_paths: []
+              service_deployment_prefix: rg
+              template_name: redis40-cluster-big
+              template_name_v2: redis40-cluster
+            redis-cluster-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-medium
+                vm_type: medium
+              description: a medium cluster deployment
+              free: true
+              guid: fda45fb1-623f-4e6e-beab-852c1512382a
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-cluster-medium
+              template_name_v2: redis40-cluster
+            redis-cluster-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-small
+                vm_type: small
+              description: a small cluster deployment
+              free: true
+              guid: 43793479-8b3e-42a1-87ca-f0b15218ad0b
+              migration_paths:
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-cluster-small
+              template_name_v2: redis40-cluster
+            redis-single-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-big
+                vm_type: large
+              description: a big single instance
+              free: true
+              guid: 3cc4e80e-743c-41e3-a8bc-ade1bd861a85
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-big
+              template_name_v2: redis40-single
+            redis-single-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-medium
+                vm_type: medium
+              description: a medium instance
+              free: true
+              guid: 5fe85483-ff66-4601-9a48-a2c72b878d32
+              migration_paths:
+              - redis-single-big
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-medium
+              template_name_v2: redis40-single
+            redis-single-nano:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-nano
+                vm_type: nano
+              description: a single instance
+              free: true
+              guid: 086ea990-7fb3-4346-ae59-f6cf535625dd
+              migration_paths:
+              - redis-single-small
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-nano
+              template_name_v2: redis40-single-no-logging
+            redis-single-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-small
+                vm_type: small
+              description: a single instance
+              free: true
+              guid: 5ee6ada1-4378-48a4-bc98-b610354cab0a
+              migration_paths:
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-small
+              template_name_v2: redis40-single
+          requires: []
+          tags:
+          - data structure store
+          - database
+          - cache
+          - message broker
+          version: 4
+        - bindable: true
+          dashboard_client:
+            id: 030a468b-9881-494e-a29f-60f25d1c0e1c
+            redirect_uri: https://redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+            secret: ((/a9s_redisdashboard_client_secret))
+          description: This is a service creating and managing dedicated Redis service
+            instances, powered by the anynines Service Framework
+          documentation_url: https://www.anynines.com
+          guid: 5f075f9e-11fb-4434-8712-e8ffd0094ccf
+          label: a9s-redis
+          metadata:
+            displayName: a9s Redis 5.0
+            documentationUrl: https://www.anynines.com
+            shareable: true
+            supportUrl: https://dssupport.anynines.com
+          name: a9s-redis50-ms-1589963251
+          plans:
+            redis-cluster-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-big
+                vm_type: large
+              description: a big cluster deployment
+              free: true
+              guid: a0ce05f2-8127-4f38-b778-b3d4fe291e1e
+              migration_paths: []
+              service_deployment_prefix: rg
+              template_name: redis50-cluster-big
+              template_name_v2: redis50-cluster
+            redis-cluster-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-medium
+                vm_type: medium
+              description: a medium cluster deployment
+              free: true
+              guid: efee4620-bb06-42f9-beed-cd3debb3521e
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-cluster-medium
+              template_name_v2: redis50-cluster
+            redis-cluster-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-small
+                vm_type: small
+              description: a small cluster deployment
+              free: true
+              guid: f6533e4e-e507-49cc-ab9f-4cb5c09eeaf5
+              migration_paths:
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-cluster-small
+              template_name_v2: redis50-cluster
+            redis-single-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-big
+                vm_type: large
+              description: a big single instance
+              free: true
+              guid: cd4741bb-7fc1-4a08-9747-95190da86765
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-big
+              template_name_v2: redis50-single
+            redis-single-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-medium
+                vm_type: medium
+              description: a medium instance
+              free: true
+              guid: caa161a2-2ed4-4676-8982-5be57fc545a9
+              migration_paths:
+              - redis-single-big
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-medium
+              template_name_v2: redis50-single
+            redis-single-nano:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-nano
+                vm_type: nano
+              description: a single instance
+              free: true
+              guid: ef8e655f-7aa5-48a3-a884-fd6cae086ec6
+              migration_paths:
+              - redis-single-small
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-nano
+              template_name_v2: redis50-single-no-logging
+            redis-single-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-small
+                vm_type: small
+              description: a single instance
+              free: true
+              guid: 9a119eb1-7bc1-450b-aef8-d68a88bbf089
+              migration_paths:
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-small
+              template_name_v2: redis50-single
+          requires: []
+          tags:
+          - data structure store
+          - database
+          - cache
+          - message broker
+          version: 5
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: broker
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: service-broker
+  - consumes:
+      consul_nodes: nil
+    name: consul
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: broker
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: a9s-consul
+  - name: anynines-service-broker-clockworker
+    properties:
+      anynines_service_broker:
+        secret_key_base: ((redis_service_broker_secret_key_base))
+    release: service-broker
+  - name: anynines-service-broker-worker
+    properties:
+      anynines_service_broker:
+        secret_key_base: ((redis_service_broker_secret_key_base))
+    release: service-broker
+  name: broker
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: small
+- azs:
+  - z2
+  - z1
+  - z3
+  instances: 1
+  jobs:
+  - name: anynines-bosh-deployer
+    properties:
+      anynines_bosh_deployer:
+        authentication:
+          http_auth_password: ((/redis_service_deployer_password))
+          http_auth_username: admin
+        bosh:
+          ca_cert: ((/bosh_director_ssl.ca))
+          client: service
+          client_secret: ((/bosh_client_secret))
+          director_uuid: arandomstring
+          directors:
+            director:
+              active: true
+              ca_cert: ((/bosh_director_ssl.ca))
+              client: service
+              client_secret: ((/bosh_client_secret))
+              director_uuid: arandomstring
+              environment: 172.28.2.31
+          environment: 172.28.2.31
+          password: ((/bosh_client_secret))
+          uri: https://172.28.2.31:25555
+          username: service
+        database:
+          database_name: redis-deployer-ms-1589963251
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_redisboshdeployer_password))
+          port: 5432
+          user_name: redisboshdeployer
+        encryption:
+          old_salt32: ((redis_service_deployer_db_salt32_old))
+          salt32: ((redis_service_deployer_db_salt32))
+        port: 3000
+        secret_key_base: ((redis_service_deployer_secret_key_base))
+        version: 0.1.0
+        worker:
+          count: 1
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: deployer
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: deployer
+  - consumes:
+      consul_nodes: nil
+    name: consul
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: deployer
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: a9s-consul
+  name: deployer-api
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: nano
+- azs:
+  - z3
+  - z1
+  - z2
+  instances: 1
+  jobs:
+  - name: dashboard-api
+    properties:
+      anynines-backup-manager:
+        authentication:
+          http_auth_password: ((/backup_manager_password))
+          http_auth_username: admin
+      anynines_service_broker:
+        authentication:
+          http_auth_password: ((/redis_service_broker_password))
+          http_auth_username: admin
+        service_broker:
+          api_endpoint: http://redis-ms-1589963251-broker.service.dc1.consul.dsf2:3000
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+      dashboard-api:
+        authentication:
+          http_auth_password: ((/a9s_redisdashboard_api_password))
+          http_auth_username: ((/a9s_redisdashboard_api_username))
+        backup_manager_host: redis-ms-1589963251-backup-manager.service.dc1.consul.dsf2
+        cf_api_host: https://api.system.a9s-ds-concourse.a9s-ops.de
+        port: 4000
+        static_assets_path: /var/vcap/packages/dashboard-app/build
+    provides:
+      nodes:
+        as: dashboard-api
+    release: dashboard-api
+  - name: sso-proxy
+    properties:
+      sso-proxy:
+        basepath: /service-instances
+        cf_api: https://api.system.a9s-ds-concourse.a9s-ops.de
+        dashboard_client_id: 5105546f-146e-4e7a-9aef-c266e59de7dd
+        dashboard_client_scope: cloud_controller_service_permissions.read openid cloud_controller.read
+        dashboard_client_secret: ((/a9s_redisdashboard_client_secret))
+        instance_guid: ""
+        oauth_server: https://login.system.a9s-ds-concourse.a9s-ops.de
+        skip_ssl_validation: true
+        token_server: https://uaa.system.a9s-ds-concourse.a9s-ops.de
+    release: sso-proxy
+  - consumes:
+      nodes:
+        from: dashboard-api
+    name: nginx-sso-proxy
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+      nginx-sso-proxy:
+        listenlocal: true
+        upstream:
+          password: ((/a9s_redisdashboard_api_password))
+          port: 4000
+          username: ((/a9s_redisdashboard_api_username))
+    release: sso-proxy
+  - consumes:
+      consul_nodes: nil
+    name: consul
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: a9s-consul
+  - name: bpm
+    release: bpm
+  - name: route_registrar
+    properties:
+      nats:
+        machines:
+        - 172.28.1.26
+        password: ((/cf_user_nats_password))
+        port: 4222
+        user: nats-user
+      route_registrar:
+        routes:
+        - name: redis-ms-1589963251
+          port: 3000
+          registration_interval: 20s
+          tags:
+            component: redis-ms-1589963251
+            env: production
+          uris:
+          - redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+    release: routing
+  name: service-dashboard
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: nano
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 1
+  jobs:
+  - name: deployment-updater
+    properties:
+      anynines_service_broker:
+        bosh_deployer:
+          api_endpoint: http://redis-service-deployer.service.dc1.consul.dsf2:3000
+          password: ((/redis_service_deployer_password))
+          username: admin
+      deployment-updater:
+        service-broker-host: redis-ms-1589963251-broker.service.dc1.consul.dsf2
+        service-broker-password: ((/redis_service_broker_password))
+        service-broker-port: 3000
+        service-broker-username: admin
+    release: deployment-updater
+  lifecycle: errand
+  name: deployment_updater
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: nano
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 1
+  jobs:
+  - name: deployment-updater
+    properties:
+      anynines_service_broker:
+        bosh_deployer:
+          api_endpoint: http://redis-service-deployer.service.dc1.consul.dsf2:3000
+          password: ((/redis_service_deployer_password))
+          username: admin
+      deployment-updater:
+        force-update: true
+        service-broker-host: redis-ms-1589963251-broker.service.dc1.consul.dsf2
+        service-broker-password: ((/redis_service_broker_password))
+        service-broker-port: 3000
+        service-broker-username: admin
+    release: deployment-updater
+  lifecycle: errand
+  name: force_deployment_updater
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: nano
+- azs:
+  - z2
+  - z1
+  - z3
+  instances: 1
+  jobs:
+  - name: service-smoke-tests
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+      service-smoke-tests:
+        backup:
+          api_endpoint: redis-ms-1589963251-backup-manager.service.dc1.consul.dsf2:3000
+          password: ((/backup_manager_password))
+          username: admin
+        cf:
+          api_endpoint: https://api.system.a9s-ds-concourse.a9s-ops.de
+          apps_domain: apps.a9s-ds-concourse.a9s-ops.de
+          org: smoke-tests
+          password: ((/cf_user_admin_password))
+          space: redis-smoke-tests
+          username: admin
+        service:
+          custom_parameters: '{"snapshot": "[''save 1 1'']", "graphite": ["prometheus-platform.service.dc1.consul.dsf2:9109"]}'
+          do_check_backup: true
+          do_check_dashboard_sso: true
+          do_check_dedicated_credentials: false
+          do_check_plan_update: true
+          do_check_prometheus_streaming: true
+          do_check_security_guard: true
+          do_check_service_cases: false
+          max_parallel: 1
+          services:
+          - name: a9s-redis50-ms-1589963251
+            plan_updates:
+              redis-single-nano:
+              - redis-single-medium
+              - redis-cluster-medium
+            plans:
+            - redis-cluster-medium
+            - redis-single-nano
+            - redis-single-medium
+          - name: a9s-redis32-ms-1589963251
+            plan_updates:
+              redis-single-nano:
+              - redis-single-medium
+              - redis-cluster-medium
+            plans:
+            - redis-cluster-medium
+            - redis-single-nano
+            - redis-single-medium
+          - name: a9s-redis40-ms-1589963251
+            plan_updates:
+              redis-single-nano:
+              - redis-single-medium
+              - redis-cluster-medium
+            plans:
+            - redis-cluster-medium
+            - redis-single-nano
+            - redis-single-medium
+          type: redis
+    release: service-smoke-tests
+  lifecycle: errand
+  name: smoke-tests
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: small
+- azs:
+  - z2
+  - z1
+  - z3
+  instances: 1
+  jobs:
+  - consumes:
+      consul_nodes: nil
+    name: template-uploader
+    properties:
+      anynines_service_broker:
+        bosh_deployer:
+          api_endpoint: http://redis-ms-1589963251-deployer.service.dc1.consul.dsf2:3000
+          password: ((/redis_service_deployer_password))
+          username: admin
+      template-uploader:
+        freeze_release_versions: true
+        releases:
+        - name: a9s-consul
+          sha1: sha256:b7a00e360f4bad7fbb326ebde4c73add8a908933369507c90a4482cd905147e3
+          url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-consul-30.tgz
+          version: 30
+        - name: a9s-parachute
+          sha1: sha256:8e3ea161d86fa28b5884d2fa5de9ba28312f04b229bf9c852f7233cde57ea9f9
+          url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-parachute-3.tgz
+          version: 3
+        - name: backup-agent
+          sha1: sha256:11893e16c26dbc2c099d12a9fcab1f33ed0a140311cd3bfab6da39a07e724357
+          url: https://d3r5lzz0qww9ge.cloudfront.net/backup-agent-94.tgz
+          version: 94
+        - name: bpm
+          sha1: sha256:5b5b9acfd286ebbdb9916b68345935783aaec6f21bee6c7f87c3e74ac9eacc7e
+          url: https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.5
+          version: 1.1.5
+        - name: dashboard-api
+          sha1: sha256:9fa2ae1f0499077fda4b4750220669ffd4141cc694eaa2e323ae6a2452427192
+          url: https://d3r5lzz0qww9ge.cloudfront.net/dashboard-api-55.tgz
+          version: 55
+        - name: deployer
+          sha1: sha256:2b730413ca5634f0dfa769dd9d13b0682d0780fad67a9e53e8612b40cdb39b3f
+          url: https://d3r5lzz0qww9ge.cloudfront.net/deployer-78.tgz
+          version: 78
+        - name: deployment-updater
+          sha1: sha256:3afc24c930128824f0386d81cd1dd3aafb2164383625b426eccde134581d8dbb
+          url: https://d3r5lzz0qww9ge.cloudfront.net/deployment-updater-16.tgz
+          version: 16
+        - name: logstash6
+          sha1: sha256:d3fe9789a8b06f346e1b89c93ad1b18fff0ba283e59d9fbc42b47ec0c84ae9e0
+          url: https://d3r5lzz0qww9ge.cloudfront.net/logstash6-40.0.14.tgz
+          version: 40.0.14
+        - name: routing
+          sha1: sha256:a065f3b85ec28608f727a0db4c7eafbcf899365eebcc6a005961a9d829645f75
+          url: https://bosh.io/d/github.com/cloudfoundry-incubator/cf-routing-release?v=0.193.0
+          version: 0.193.0
+        - name: service-broker
+          sha1: sha256:bf9f074c65355b981eddd4bc017074f0b398bed1a9bf0e9af83ee0e0a9abfa14
+          url: https://d3r5lzz0qww9ge.cloudfront.net/service-broker-130.tgz
+          version: 130
+        - name: service-smoke-tests
+          sha1: sha256:2a49fa726271407e99d26f72e51d09acfbec9c5e52ea0363d4d9d209eb52b46f
+          url: https://d3r5lzz0qww9ge.cloudfront.net/service-smoke-tests-93.tgz
+          version: 93
+        - name: sso-proxy
+          sha1: sha256:206c7850839954cbbd2b11404dde1745074ef10fddb82b06f7b9b9cef57df2a4
+          url: https://d3r5lzz0qww9ge.cloudfront.net/sso-proxy-21.tgz
+          version: 21
+        - name: redis32
+          sha1: sha256:0db8f643e402f370b29d1e9161bcbfc94f0870934b1dfef17321282fce23fabd
+          url: https://d3r5lzz0qww9ge.cloudfront.net/redis32-6.1.1.tgz
+          version: 6.1.1
+        - name: redis40
+          sha1: sha256:f97c9eb16906dcfede2cfd1acea8c4dd744ec13346cc7ba78a05280556946211
+          url: https://d3r5lzz0qww9ge.cloudfront.net/redis40-2.1.1.tgz
+          version: 2.1.1
+        - name: redis50
+          version: gogolok-1
+        service: redis
+        template-ops-files:
+        - ops/randomize_az_placement.yml
+        template-vars:
+          /backup_manager_api: http://redis-ms-1589963251-backup-manager.service.dc1.consul.dsf2:3000
+          /cdns_encrypt: ((/cdns_encrypt))
+          /cdns_ssl.ca: ((/cdns_ssl.ca))
+          /cdns_ssl.certificate: ((/cdns_ssl.certificate))
+          /cdns_ssl.private_key: ((/cdns_ssl.private_key))
+          /redis_service_backup_agent_password: ((/redis_service_backup_agent_password))
+          /redis_service_backup_agent_username: ((/redis_service_backup_agent_username))
+          add_consul_to_bosh_dns_resolvers: false
+          consul_domain: consul.dsf2
+          consul_ips:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+          dashboard_client_id: redis-ms-1589963251-client-id
+          global_graphite_endpoint: ""
+          global_syslog_endpoint: ""
+          service_network: dynamic
+          stemcell_alias: ubuntu-xenial
+          stemcell_os: ubuntu-xenial
+          stemcell_version: 621.57
+          use_metrics_prefix_level_2: false
+          use_metrics_prefix_level_3: false
+    release: template-uploader-errand
+  lifecycle: errand
+  name: templates-uploader
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: nano
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 1
+  jobs:
+  - name: migrate-encrypted-database-fields
+    properties:
+      anynines_bosh_deployer:
+        authentication:
+          http_auth_password: ((/redis_service_deployer_password))
+          http_auth_username: admin
+        bosh:
+          directors:
+            director:
+              active: true
+              ca_cert: ((bosh.ca_cert))
+              client: admin
+              client_secret: ((bosh.password))
+              environment: ((bosh.environment))
+        database:
+          database_name: redisboshdeployer
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_redisboshdeployer_password))
+          port: 5432
+          user_name: redisboshdeployer
+        encryption:
+          old_salt32: ((redis_service_deployer_db_salt32_old))
+          salt32: ((redis_service_deployer_db_salt32))
+        port: 3000
+        secret_key_base: ((redis_service_deployer_secret_key_base))
+        version: 0.1.0
+        worker:
+          count: 1
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: deployer
+  lifecycle: errand
+  name: migrate-deployer-api-encrypted-database-fields
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: small
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 1
+  jobs:
+  - name: migrate-encrypted-database-fields
+    properties:
+      anynines_service_broker:
+        authentication:
+          http_auth_password: ((/redis_service_broker_password))
+          http_auth_username: admin
+        billing:
+          api_endpoint: https://usage.anynines.com
+          password: public-s3cr3t
+          sync_interval_in_minutes: 60
+          username: cf_collector
+        bosh_deployer:
+          api_endpoint: http://redis-ms-1589963251-deployer.service.dc1.consul.dsf2:3000
+          password: ((/redis_service_deployer_password))
+          username: admin
+        database:
+          database_name: redisbroker
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_redisbroker_password))
+          port: 5432
+          user_name: redisbroker
+        encryption:
+          old_salt: ((redis_service_broker_encryption_salt_old))
+          salt: ((redis_service_broker_encryption_salt))
+        jobs:
+          update_instances_locked_state_interval: 0
+        port: 3000
+        secret_key_base: ((redis_service_broker_secret_key_base))
+        service_adapter:
+          api_endpoint: http://redis-ms-1589963251-spi.service.dc1.consul.dsf2:3000
+          name: Anynines::ServiceAdapters::ExternalSpi
+          password: ((redis_service_spi_password))
+          username: admin
+        service_hostname_suffix: .node.dc1.consul.dsf2
+        services:
+        - bindable: true
+          dashboard_client:
+            id: 3884248f-0e98-4115-9971-dfb09fca06c5
+            redirect_uri: https://redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+            secret: ((/a9s_redisdashboard_client_secret))
+          description: This is a service creating and managing dedicated Redis service
+            instances, powered by the anynines Service Framework
+          documentation_url: https://www.anynines.com
+          guid: 9bdf0de6-5477-4039-8c0b-b07ecf6a0e95
+          label: a9s-redis
+          metadata:
+            displayName: a9s Redis 3.2
+            documentationUrl: https://www.anynines.com
+            shareable: true
+            supportUrl: https://dssupport.anynines.com
+          name: a9s-redis32-ms-1589963251
+          plans:
+            redis-cluster-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-big
+                vm_type: large
+              description: a big cluster deployment
+              free: true
+              guid: 2681b843-0bf2-4463-83ce-6cf906ca95f8
+              migration_paths: []
+              service_deployment_prefix: rg
+              template_name: redis-cluster-big
+              template_name_v2: redis-cluster
+            redis-cluster-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-medium
+                vm_type: medium
+              description: a medium cluster deployment
+              free: true
+              guid: b5a54b9b-62ea-46b9-a916-f329a96af142
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-cluster-medium
+              template_name_v2: redis-cluster
+            redis-cluster-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-small
+                vm_type: small
+              description: a small cluster deployment
+              free: true
+              guid: ae50273b-a29e-4a75-b3f4-6074bdd62142
+              migration_paths:
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-cluster-small
+              template_name_v2: redis-cluster
+            redis-single-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-big
+                vm_type: large
+              description: a big single instance
+              free: true
+              guid: 564ea9e0-bbae-401c-b19a-5b5537b32a99
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-big
+              template_name_v2: redis-single
+            redis-single-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-medium
+                vm_type: medium
+              description: a medium instance
+              free: true
+              guid: c6bc2f21-e95a-48ef-b536-a83b0210527c
+              migration_paths:
+              - redis-single-big
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-medium
+              template_name_v2: redis-single
+            redis-single-nano:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-nano
+                vm_type: nano
+              description: a single instance
+              free: true
+              guid: e75e6ece-44b8-4059-bde0-2923ed84dc03
+              migration_paths:
+              - redis-single-small
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-nano
+              template_name_v2: redis-single-no-logging
+            redis-single-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-small
+                vm_type: small
+              description: a single instance
+              free: true
+              guid: f919850e-1521-4a14-b794-5d52cfdd9298
+              migration_paths:
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis-single-small
+              template_name_v2: redis-single
+          requires: []
+          tags:
+          - data structure store
+          - database
+          - cache
+          - message broker
+          version: 3.2
+        - bindable: true
+          dashboard_client:
+            id: 5105546f-146e-4e7a-9aef-c266e59de7dd
+            redirect_uri: https://redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+            secret: ((/a9s_redisdashboard_client_secret))
+          description: This is a service creating and managing dedicated Redis service
+            instances, powered by the anynines Service Framework
+          documentation_url: https://www.anynines.com
+          guid: 38114d31-9ea4-486e-8c38-0725f3ad4979
+          label: a9s-redis
+          metadata:
+            displayName: a9s Redis 4.0
+            documentationUrl: https://www.anynines.com
+            shareable: true
+            supportUrl: https://dssupport.anynines.com
+          name: a9s-redis40-ms-1589963251
+          plans:
+            redis-cluster-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-big
+                vm_type: large
+              description: a big cluster deployment
+              free: true
+              guid: d3467660-360a-45e2-a7cd-8e6a7716e5ca
+              migration_paths: []
+              service_deployment_prefix: rg
+              template_name: redis40-cluster-big
+              template_name_v2: redis40-cluster
+            redis-cluster-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-medium
+                vm_type: medium
+              description: a medium cluster deployment
+              free: true
+              guid: fda45fb1-623f-4e6e-beab-852c1512382a
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-cluster-medium
+              template_name_v2: redis40-cluster
+            redis-cluster-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-small
+                vm_type: small
+              description: a small cluster deployment
+              free: true
+              guid: 43793479-8b3e-42a1-87ca-f0b15218ad0b
+              migration_paths:
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-cluster-small
+              template_name_v2: redis40-cluster
+            redis-single-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-big
+                vm_type: large
+              description: a big single instance
+              free: true
+              guid: 3cc4e80e-743c-41e3-a8bc-ade1bd861a85
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-big
+              template_name_v2: redis40-single
+            redis-single-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-medium
+                vm_type: medium
+              description: a medium instance
+              free: true
+              guid: 5fe85483-ff66-4601-9a48-a2c72b878d32
+              migration_paths:
+              - redis-single-big
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-medium
+              template_name_v2: redis40-single
+            redis-single-nano:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-nano
+                vm_type: nano
+              description: a single instance
+              free: true
+              guid: 086ea990-7fb3-4346-ae59-f6cf535625dd
+              migration_paths:
+              - redis-single-small
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-nano
+              template_name_v2: redis40-single-no-logging
+            redis-single-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-small
+                vm_type: small
+              description: a single instance
+              free: true
+              guid: 5ee6ada1-4378-48a4-bc98-b610354cab0a
+              migration_paths:
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis40-single-small
+              template_name_v2: redis40-single
+          requires: []
+          tags:
+          - data structure store
+          - database
+          - cache
+          - message broker
+          version: 4
+        - bindable: true
+          dashboard_client:
+            id: 030a468b-9881-494e-a29f-60f25d1c0e1c
+            redirect_uri: https://redis-ms-1589963251.system.a9s-ds-concourse.a9s-ops.de
+            secret: ((/a9s_redisdashboard_client_secret))
+          description: This is a service creating and managing dedicated Redis service
+            instances, powered by the anynines Service Framework
+          documentation_url: https://www.anynines.com
+          guid: 5f075f9e-11fb-4434-8712-e8ffd0094ccf
+          label: a9s-redis
+          metadata:
+            displayName: a9s Redis 5.0
+            documentationUrl: https://www.anynines.com
+            shareable: true
+            supportUrl: https://dssupport.anynines.com
+          name: a9s-redis50-ms-1589963251
+          plans:
+            redis-cluster-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-big
+                vm_type: large
+              description: a big cluster deployment
+              free: true
+              guid: a0ce05f2-8127-4f38-b778-b3d4fe291e1e
+              migration_paths: []
+              service_deployment_prefix: rg
+              template_name: redis50-cluster-big
+              template_name_v2: redis50-cluster
+            redis-cluster-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-medium
+                vm_type: medium
+              description: a medium cluster deployment
+              free: true
+              guid: efee4620-bb06-42f9-beed-cd3debb3521e
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-cluster-medium
+              template_name_v2: redis50-cluster
+            redis-cluster-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-cluster-small
+                vm_type: small
+              description: a small cluster deployment
+              free: true
+              guid: f6533e4e-e507-49cc-ab9f-4cb5c09eeaf5
+              migration_paths:
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-cluster-small
+              template_name_v2: redis50-cluster
+            redis-single-big:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-big
+                vm_type: large
+              description: a big single instance
+              free: true
+              guid: cd4741bb-7fc1-4a08-9747-95190da86765
+              migration_paths:
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-big
+              template_name_v2: redis50-single
+            redis-single-medium:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-medium
+                vm_type: medium
+              description: a medium instance
+              free: true
+              guid: caa161a2-2ed4-4676-8982-5be57fc545a9
+              migration_paths:
+              - redis-single-big
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-medium
+              template_name_v2: redis50-single
+            redis-single-nano:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-nano
+                vm_type: nano
+              description: a single instance
+              free: true
+              guid: ef8e655f-7aa5-48a3-a884-fd6cae086ec6
+              migration_paths:
+              - redis-single-small
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-nano
+              template_name_v2: redis50-single-no-logging
+            redis-single-small:
+              default_placeholder_values:
+                persistent_disk_type: a9svs-redis-single-small
+                vm_type: small
+              description: a single instance
+              free: true
+              guid: 9a119eb1-7bc1-450b-aef8-d68a88bbf089
+              migration_paths:
+              - redis-single-medium
+              - redis-single-big
+              - redis-cluster-small
+              - redis-cluster-medium
+              - redis-cluster-big
+              service_deployment_prefix: rg
+              template_name: redis50-single-small
+              template_name_v2: redis50-single
+          requires: []
+          tags:
+          - data structure store
+          - database
+          - cache
+          - message broker
+          version: 5
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: service-broker
+  lifecycle: errand
+  name: migrate-service-broker-encrypted-database-fields
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: small
+- azs:
+  - z1
+  - z2
+  - z3
+  instances: 1
+  jobs:
+  - name: anynines-backup-manager
+    properties:
+      anynines-backup-manager:
+        authentication:
+          http_auth_password: ((/backup_manager_password))
+          http_auth_username: admin
+        backup_agent:
+          paths:
+            backup_path: /v1/backup
+            backup_status_path: /v1/backup/:id/status
+            block_access: /v1/block_access
+            grant_access: /v1/grant_access
+            restore_path: /v1/restore
+            restore_status_path: /v1/restore/:id/status
+            snapshot_status: /v1/snapshot_status
+            workers_status: /v1/workers_status
+        broker:
+          hostnames:
+            redis_broker: http://admin:((/redis_service_broker_password))@redis-ms-1589963251-broker.service.dc1.consul.dsf2:3000
+          paths:
+            backup_info_path: /instances/backup_info/:instance_id
+            instance_ids_path: /instances/backup_info/
+            restore_info_path: /instances/restore_info/:instance_id
+        database:
+          database_name: redis-backup-manager-ms-1589963251
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_backupmanager_password))
+          port: 5432
+          user_name: backupmanager
+        default_plugins:
+          filters:
+            compression:
+              name: compression
+            encryption:
+              name: encryption
+          output:
+            name: fog
+        encryption:
+          key: ((backup_manager_encryption_key))
+        input_preference: custom
+        min_backup_age: 7
+        min_backups_per_instance: 5
+        plugin_configuration:
+          compression:
+            compression_level: 8
+            name:
+              backup: compress-gzip
+              restore: decompress-gzip
+          elasticsearch-backup:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            name:
+              backup: elasticsearch-backup
+              restore: elasticsearch-restore
+            provider: AWS
+            region: ((/backup_region))
+          encryption:
+            cipher: aes256
+            name:
+              backup: encrypt
+              restore: decrypt
+            plugin_credentials_per_instance:
+              password:
+                length: 32
+            use_saved_config_for_restore: true
+          fog:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            name:
+              backup: fog
+              restore: fog
+            provider: AWS
+            region: ((/backup_region))
+        port: 3000
+        puma_worker: 4
+        secret_key_base: ((backup_manager_secret_key_base))
+        version: 1.0.0
+      consul:
+        agent_address: 127.0.0.1:8500
+        base_domain: dc1.consul.dsf2
+        service_name: backup-manager
+    release: backup-manager
+  - name: anynines-backup-manager-worker
+    properties:
+      anynines-backup-manager:
+        authentication:
+          http_auth_password: ((/backup_manager_password))
+          http_auth_username: admin
+        backup_agent:
+          paths:
+            backup_path: /v1/backup
+            backup_status_path: /v1/backup/:id/status
+            block_access: /v1/block_access
+            grant_access: /v1/grant_access
+            restore_path: /v1/restore
+            restore_status_path: /v1/restore/:id/status
+            snapshot_status: /v1/snapshot_status
+            workers_status: /v1/workers_status
+        broker:
+          hostnames:
+            redis_broker: http://admin:((/redis_service_broker_password))@redis-ms-1589963251-broker.service.dc1.consul.dsf2:3000
+          paths:
+            backup_info_path: /instances/backup_info/:instance_id
+            instance_ids_path: /instances/backup_info/
+            restore_info_path: /instances/restore_info/:instance_id
+        database:
+          database_name: redis-backup-manager-ms-1589963251
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_backupmanager_password))
+          port: 5432
+          user_name: backupmanager
+        default_plugins:
+          filters:
+            compression:
+              name: compression
+            encryption:
+              name: encryption
+          output:
+            name: fog
+        encryption:
+          key: ((backup_manager_encryption_key))
+        input_preference: custom
+        min_backup_age: 7
+        min_backups_per_instance: 5
+        plugin_configuration:
+          compression:
+            compression_level: 8
+            name:
+              backup: compress-gzip
+              restore: decompress-gzip
+          elasticsearch-backup:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            name:
+              backup: elasticsearch-backup
+              restore: elasticsearch-restore
+            provider: AWS
+            region: ((/backup_region))
+          encryption:
+            cipher: aes256
+            name:
+              backup: encrypt
+              restore: decrypt
+            plugin_credentials_per_instance:
+              password:
+                length: 32
+            use_saved_config_for_restore: true
+          fog:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            name:
+              backup: fog
+              restore: fog
+            provider: AWS
+            region: ((/backup_region))
+        port: 3000
+        puma_worker: 4
+        secret_key_base: ((backup_manager_secret_key_base))
+        version: 1.0.0
+      consul:
+        agent_address: 127.0.0.1:8500
+        base_domain: dc1.consul.dsf2
+    release: backup-manager
+  - name: anynines-backup-manager-clockworker
+    properties:
+      anynines-backup-manager:
+        authentication:
+          http_auth_password: ((/backup_manager_password))
+          http_auth_username: admin
+        backup_agent:
+          paths:
+            backup_path: /v1/backup
+            backup_status_path: /v1/backup/:id/status
+            block_access: /v1/block_access
+            grant_access: /v1/grant_access
+            restore_path: /v1/restore
+            restore_status_path: /v1/restore/:id/status
+            snapshot_status: /v1/snapshot_status
+            workers_status: /v1/workers_status
+        broker:
+          hostnames:
+            redis_broker: http://admin:((/redis_service_broker_password))@redis-ms-1589963251-broker.service.dc1.consul.dsf2:3000
+          paths:
+            backup_info_path: /instances/backup_info/:instance_id
+            instance_ids_path: /instances/backup_info/
+            restore_info_path: /instances/restore_info/:instance_id
+        database:
+          database_name: redis-backup-manager-ms-1589963251
+          encoding: utf8
+          host: a9s-pg-psql-master-alias.node.dc1.consul.dsf2
+          password: ((/a9s_pg_backupmanager_password))
+          port: 5432
+          user_name: backupmanager
+        default_plugins:
+          filters:
+            compression:
+              name: compression
+            encryption:
+              name: encryption
+          output:
+            name: fog
+        encryption:
+          key: ((backup_manager_encryption_key))
+        input_preference: custom
+        min_backup_age: 7
+        min_backups_per_instance: 5
+        plugin_configuration:
+          compression:
+            compression_level: 8
+            name:
+              backup: compress-gzip
+              restore: decompress-gzip
+          elasticsearch-backup:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            name:
+              backup: elasticsearch-backup
+              restore: elasticsearch-restore
+            provider: AWS
+            region: ((/backup_region))
+          encryption:
+            cipher: aes256
+            name:
+              backup: encrypt
+              restore: decrypt
+            plugin_credentials_per_instance:
+              password:
+                length: 32
+            use_saved_config_for_restore: true
+          fog:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            name:
+              backup: fog
+              restore: fog
+            provider: AWS
+            region: ((/backup_region))
+        port: 3000
+        puma_worker: 4
+        secret_key_base: ((backup_manager_secret_key_base))
+        version: 1.0.0
+      consul:
+        agent_address: 127.0.0.1:8500
+        base_domain: dc1.consul.dsf2
+        service_name: backup-manager
+    release: backup-manager
+  - name: backup-monit
+    properties:
+      backup-monit:
+        config:
+          backup_manager:
+            routes:
+              instances: /instances
+            url: http://admin:((/backup_manager_password))@redis-ms-1589963251-backup-manager.service.dc1.consul.dsf2:3000
+          backup_store:
+            aws_access_key_id: ((/backup_access_key))
+            aws_secret_access_key: ((/backup_secret_access_key))
+            container: ((/backup_bucket))
+            provider: AWS
+            region: ((/backup_region))
+          external_backups:
+          - backup_name: a9s-pg
+        endpoint:
+          password: ((anynines_backup_monit_password))
+          port: 4000
+          username: admin
+      consul:
+        agent_address: 127.0.0.1:8500
+        dc: dc1
+        domain: consul.dsf2
+        service_name: backup-monit
+    release: backup-monit
+  - consumes:
+      consul_nodes: nil
+    name: consul
+    properties:
+      consul:
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        service_name: backup-manager
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+    release: a9s-consul
+  name: ancillary-services
+  networks:
+  - name: dynamic
+  stemcell: ubuntu-xenial
+  vm_type: small
+name: redis-ms-1589963251
+releases:
+- name: a9s-consul
+  sha1: sha256:b7a00e360f4bad7fbb326ebde4c73add8a908933369507c90a4482cd905147e3
+  url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-consul-30.tgz
+  version: 30
+- name: a9s-parachute
+  sha1: sha256:8e3ea161d86fa28b5884d2fa5de9ba28312f04b229bf9c852f7233cde57ea9f9
+  url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-parachute-3.tgz
+  version: 3
+- name: backup-agent
+  sha1: sha256:11893e16c26dbc2c099d12a9fcab1f33ed0a140311cd3bfab6da39a07e724357
+  url: https://d3r5lzz0qww9ge.cloudfront.net/backup-agent-94.tgz
+  version: 94
+- name: bpm
+  sha1: sha256:5b5b9acfd286ebbdb9916b68345935783aaec6f21bee6c7f87c3e74ac9eacc7e
+  url: https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.5
+  version: 1.1.5
+- name: dashboard-api
+  sha1: sha256:9fa2ae1f0499077fda4b4750220669ffd4141cc694eaa2e323ae6a2452427192
+  url: https://d3r5lzz0qww9ge.cloudfront.net/dashboard-api-55.tgz
+  version: 55
+- name: deployer
+  sha1: sha256:2b730413ca5634f0dfa769dd9d13b0682d0780fad67a9e53e8612b40cdb39b3f
+  url: https://d3r5lzz0qww9ge.cloudfront.net/deployer-78.tgz
+  version: 78
+- name: deployment-updater
+  sha1: sha256:3afc24c930128824f0386d81cd1dd3aafb2164383625b426eccde134581d8dbb
+  url: https://d3r5lzz0qww9ge.cloudfront.net/deployment-updater-16.tgz
+  version: 16
+- name: logstash6
+  sha1: sha256:d3fe9789a8b06f346e1b89c93ad1b18fff0ba283e59d9fbc42b47ec0c84ae9e0
+  url: https://d3r5lzz0qww9ge.cloudfront.net/logstash6-40.0.14.tgz
+  version: 40.0.14
+- name: routing
+  sha1: sha256:a065f3b85ec28608f727a0db4c7eafbcf899365eebcc6a005961a9d829645f75
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/cf-routing-release?v=0.193.0
+  version: 0.193.0
+- name: service-broker
+  sha1: sha256:bf9f074c65355b981eddd4bc017074f0b398bed1a9bf0e9af83ee0e0a9abfa14
+  url: https://d3r5lzz0qww9ge.cloudfront.net/service-broker-130.tgz
+  version: 130
+- name: service-smoke-tests
+  sha1: sha256:2a49fa726271407e99d26f72e51d09acfbec9c5e52ea0363d4d9d209eb52b46f
+  url: https://d3r5lzz0qww9ge.cloudfront.net/service-smoke-tests-93.tgz
+  version: 93
+- name: sso-proxy
+  sha1: sha256:206c7850839954cbbd2b11404dde1745074ef10fddb82b06f7b9b9cef57df2a4
+  url: https://d3r5lzz0qww9ge.cloudfront.net/sso-proxy-21.tgz
+  version: 21
+- name: template-uploader-errand
+  version: gogolok-4
+- name: redis-spi
+  version: gogolok-5
+- name: redis32
+  sha1: sha256:0db8f643e402f370b29d1e9161bcbfc94f0870934b1dfef17321282fce23fabd
+  url: https://d3r5lzz0qww9ge.cloudfront.net/redis32-6.1.1.tgz
+  version: 6.1.1
+- name: redis40
+  sha1: sha256:f97c9eb16906dcfede2cfd1acea8c4dd744ec13346cc7ba78a05280556946211
+  url: https://d3r5lzz0qww9ge.cloudfront.net/redis40-2.1.1.tgz
+  version: 2.1.1
+- name: redis50
+  version: gogolok-1
+- name: backup-manager
+  url: https://d3r5lzz0qww9ge.cloudfront.net/backup-manager-72.1.0.tgz
+  version: 72.1.0
+- name: backup-monit
+  url: https://d3r5lzz0qww9ge.cloudfront.net/backup-monit-17.tgz
+  version: 17
+stemcells:
+- alias: ubuntu-xenial
+  os: ubuntu-xenial
+  version: 621.57
+update:
+  canaries: 1
+  canary_watch_time: 1000-180000
+  max_in_flight: 2
+  serial: true
+  update_watch_time: 1000-180000
+variables:
+- name: redis_service_spi_password
+  type: password
+- name: redis_service_deployer_secret_key_base
+  type: password
+- name: /redis_service_deployer_password
+  type: password
+- name: redis_service_deployer_db_salt32
+  options:
+    length: 32
+  type: password
+- name: redis_service_deployer_db_salt32_old
+  options:
+    length: 32
+  type: password
+- name: redis_service_broker_adapter_password
+  type: password
+- name: redis_service_broker_secret_key_base
+  type: password
+- name: redis_service_broker_encryption_salt
+  type: password
+- name: redis_service_broker_encryption_salt_old
+  type: password
+- name: /redis_service_backup_agent_username
+  type: password
+- name: /redis_service_backup_agent_password
+  type: password
+- name: /a9s_redisdashboard_api_username
+  type: password
+- name: /a9s_redisdashboard_api_password
+  type: password
+- name: /backup_manager_password
+  type: password
+- name: /a9s_redisdashboard_client_secret
+  type: password
+- name: backup_manager_secret_key_base
+  type: password
+- name: anynines_backup_monit_password
+  type: password
+- name: backup_manager_encryption_plugin_password
+  type: password
+- name: backup_agent_password
+  type: password
+- name: backup_manager_encryption_key
+  options:
+    length: 32
+  type: password

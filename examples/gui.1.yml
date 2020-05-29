@@ -1,5 +1,5 @@
 ---
-name: std71be5e00
+name: test
 
 releases:
 - name: gui
@@ -11,9 +11,9 @@ releases:
 - name: database
   version: latest
 - name: a9s-consul
+ # sha1: sha256:10c3906c2b2cc70f4e928bc1367df33861200e4545f6540ed15f56005f61adbe
+ # url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-consul-27.tgz
   version: 30
-  url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-consul-30.tgz
-  sha1: sha256:b7a00e360f4bad7fbb326ebde4c73add8a908933369507c90a4482cd905147e3
 - name: routing
   version: 0.193.0
   url: https://bosh.io/d/github.com/cloudfoundry-incubator/cf-routing-release?v=0.193.0
@@ -36,8 +36,8 @@ update:
   update_watch_time: 1000-180000
 
 instance_groups:
-- name: ((route_subdomain))
-  azs: [z2]
+- name: test
+  azs: [z1]
   instances: 1
   vm_type: small
   stemcell: default
@@ -53,14 +53,11 @@ instance_groups:
         agent_address: 127.0.0.1:8500
         cluster:
           join_hosts:
-          # - 172.28.35.21
-          # - 172.28.36.21
-          # - 172.28.37.21
-          - 172.28.28.21
-          - 172.28.29.21
-          - 172.28.30.21
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
         dc: dc1
-        domain: consul.dsf1 #  consul.dsf2
+        domain: consul.dsf2
         encrypt: ((/cdns_encrypt))
         server: false
         ssl_ca: ((/cdns_ssl.ca))
@@ -82,14 +79,14 @@ instance_groups:
         user: nats-user
       route_registrar:
         routes:
-        - name: ((route_subdomain))
+        - name: test
           registration_interval: 20s
           port: 80
           tags:
-            component: ((route_subdomain))
+            component: test
             env: production
           uris:
-          - ((route_subdomain)).system.a9s-ds-concourse.a9s-ops.de
+          - "test.system.a9s-ds-concourse.a9s-ops.de"
 
   - name: nginx
     release: gui
@@ -104,17 +101,17 @@ instance_groups:
         port: 5000
       consul:
         dc: dc1
-        domain: consul.dsf1 # consul.dsf2
+        domain: consul.dsf2
 
   - name: gui
     release: gui
-    provides:
-      nodes:
-        as: gui
+    # provides:
+    #   nodes:
+    #     as: gui
     properties:
       consul:
         dc: dc1
-        domain: consul.dsf1 # consul.dsf2
+        domain: consul.dsf2
       gui:
         # all non local addresses
         # 0.0.0.0/0 represents all possible IP addresses. In the context of the way routing tables get set up by default on AWS,
@@ -129,26 +126,23 @@ instance_groups:
       calculator:
         port: 4000
 
-  - name: lexer
-    release: lexer
-    properties:
-      lexer:
-        host: 0.0.0.0
-        port: 3000
+  # - name: lexer
+  #   release: lexer
+  #   properties:
+  #     lexer:
+  #       host: 0.0.0.0
+  #       port: 3000
 
-  - name: calculator
-    release: calculator
-    properties:
-      calculator:
-        host: 0.0.0.0
-        port: 4000
+  # - name: calculator
+  #   release: calculator
+  #   properties:
+  #     calculator:
+  #       host: 0.0.0.0
+  #       port: 4000
 
-  - name: database
-    release: database
-    properties:
-      database:
-        host: 0.0.0.0
-        port: 6000
-
-# bosh deploy -d std140376 gui.yml -v route_subdomain=collection  --no-redact
-# std71be5e00.system.a9s-ds-concourse.a9s-ops.de
+  # - name: database
+  #   release: database
+  #   properties:
+  #     database:
+  #       host: 0.0.0.0
+  #       port: 6000
