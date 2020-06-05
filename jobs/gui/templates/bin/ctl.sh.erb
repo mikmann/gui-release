@@ -6,10 +6,11 @@ PIDFILE=${RUN_DIR}/pid
 
 
 # Set environment variables
-export GUI_HOST=<%= p('gui.host') %>
-export GUI_PORT=<%= p('gui.port') %>
-export LEXER_PORT=<%= p('lexer.port') %>
-export CALCULATOR_PORT=<%= p('calculator.port') %>
+export GUI_HOST=<%= p('host') %>
+export GUI_PORT=<%= p('port') %>
+export LEXER_PORT="<%= link('lexer_port').p('port') %>"
+export CALCULATOR_PORT="<%= link('calculator_port').p('port') %>"
+export DATABASE_PORT="<%= link('database_port').p('port') %>"
 export NODE_ROUTE=<%= "#{spec.deployment}-#{spec.deployment}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
 
 
