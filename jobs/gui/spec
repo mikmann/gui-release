@@ -8,33 +8,21 @@ packages:
   - ruby-2.6.5-r0.29.0
   - gui
 
+consumes:
+- name: lexer_port
+  type: http
+- name: calculator_port
+  type: http
+- name: database_port
+  type: http
+
 properties:
-  gui:
-    host:
-      description: "The hostname or IP address which the GUI app is running."
-      default: localhost
-    port:
-      description: "The port number which the ruby GUI app is listening."
-      default: 5000
-  lexer:
-    port:
-      description: "The port number which the ruby lexer app is listening."
-      default: 3000
-  calculator:
-    port:
-      description: "The port number which the ruby calculator app is listening."
-      default: 4000
-  database:
-    port:
-      description: "The port number which the ruby database app is listening."
-      default: 6000
-  nginx:
-    host:
-      description: "The hostname or IP address which the NGINX app is running."
-      default: localhost
-    port:
-      description: "The port number which the ruby NGINX app is listening."
-      default: 8080
+  host:
+    description: "The hostname or IP address which the GUI app is running."
+    default: localhost
+  port:
+    description: "The port number which the ruby GUI app is listening."
+    default: 5000
   consul:
     dc:
       description: "Consul DC"
