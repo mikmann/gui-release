@@ -1,0 +1,177 @@
+---
+name: std140376
+
+releases:
+- name: gui
+  version: latest
+- name: lexer
+  version: latest
+- name: calculator
+  version: latest
+- name: database
+  version: latest
+- name: a9s-consul
+  version: 30
+  url: https://d3r5lzz0qww9ge.cloudfront.net/a9s-consul-30.tgz
+  sha1: sha256:b7a00e360f4bad7fbb326ebde4c73add8a908933369507c90a4482cd905147e3
+- name: routing
+  version: 0.193.0
+  url: https://bosh.io/d/github.com/cloudfoundry-incubator/cf-routing-release?v=0.193.0
+  sha1: sha256:a065f3b85ec28608f727a0db4c7eafbcf899365eebcc6a005961a9d829645f75
+- name: bpm
+  sha1: sha256:5b5b9acfd286ebbdb9916b68345935783aaec6f21bee6c7f87c3e74ac9eacc7e
+  url: https://bosh.io/d/github.com/cloudfoundry/bpm-release?v=1.1.5
+  version: 1.1.5
+
+stemcells:
+- alias: default
+  os: ubuntu-xenial
+  version: latest
+
+update:
+  canaries: 1
+  canary_watch_time: 1000-180000
+  max_in_flight: 1
+  update_watch_time: 1000-180000
+
+instance_groups:
+- name: ((route_subdomain))
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul: &consul
+        agent_address: 127.0.0.1:8500
+        cluster:
+          join_hosts:
+          - 172.28.35.21
+          - 172.28.36.21
+          - 172.28.37.21
+        dc: dc1
+        domain: consul.dsf2
+        encrypt: ((/cdns_encrypt))
+        server: false
+        ssl_ca: ((/cdns_ssl.ca))
+        ssl_cert: ((/cdns_ssl.certificate))
+        ssl_key: ((/cdns_ssl.private_key))
+  - name: bpm
+    release: bpm
+  - name: route_registrar
+    release: routing
+    properties:
+      nats:
+        machines:
+        - 172.28.1.26
+        password: ((/cf_user_nats_password))
+        port: 4222
+        user: nats-user
+      route_registrar:
+        routes:
+        - name: ((route_subdomain))
+          registration_interval: 20s
+          port: 80
+          tags:
+            component: ((route_subdomain))
+            env: production
+          uris:
+          - ((route_subdomain)).system.a9s-ds-concourse.a9s-ops.de
+  - name: nginx
+    release: gui
+    properties:
+      nginx:
+        upstream_host: 0.0.0.0
+        upstream_port: 80
+      gui:
+        port: 5000
+      consul:
+        dc: dc1
+        domain: consul.dsf2
+  - name: gui
+    release: gui
+    consumes:
+      lexer_port: { from: lexer }
+      calculator_port: { from: calculator }
+      database_port: { from: database }
+    properties:
+      host: 0.0.0.0
+      port: 5000
+      consul:
+        dc: dc1
+        domain: consul.dsf2
+
+- name: lexer
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul: *consul
+  - name: lexer
+    release: lexer
+    provides:
+      lexer_port: { as: lexer }
+    properties:
+      host: 0.0.0.0
+      port: 3000
+
+- name: calculator
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul: *consul
+  - name: calculator
+    release: calculator
+    provides:
+      calculator_port: { as: calculator }
+    properties:
+      host: 0.0.0.0
+      port: 4000
+
+- name: database
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul: *consul
+  - name: database
+    release: database
+    provides:
+      database_port: { as: database }
+    properties:
+      host: 0.0.0.0
+      port: 6000
+
+# bosh deploy -d std140376 gui.yml -v route_subdomain=std140376  --no-redact
+# std140376.system.a9s-ds-concourse.a9s-ops.de
