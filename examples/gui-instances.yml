@@ -1,5 +1,5 @@
 ---
-name: std1403761
+name: std140376
 
 releases:
 - name: gui
@@ -38,35 +38,33 @@ instance_groups:
 - name: ((route_subdomain))
   azs: [z2]
   instances: 1
-  vm_type: small
+  vm_type: nano
   stemcell: default
   networks:
   - name: dynamic
-
   jobs:
   - name: consul
+    release: a9s-consul
     consumes:
       consul_nodes: nil
     properties:
       consul:
-        agent_address: 127.0.0.1:8500
-        cluster:
-          join_hosts:
-          - 172.28.35.21
-          - 172.28.36.21
-          - 172.28.37.21
-        dc: dc1
-        domain: consul.dsf2
-        encrypt: ((/cdns_encrypt))
-        server: false
-        ssl_ca: ((/cdns_ssl.ca))
-        ssl_cert: ((/cdns_ssl.certificate))
-        ssl_key: ((/cdns_ssl.private_key))
-    release: a9s-consul
-
+        <<: &consul
+          agent_address: 127.0.0.1:8500
+          cluster:
+            join_hosts:
+            - 172.28.35.21
+            - 172.28.36.21
+            - 172.28.37.21
+          dc: dc1
+          domain: consul.dsf2
+          encrypt: ((/cdns_encrypt))
+          server: false
+          ssl_ca: ((/cdns_ssl.ca))
+          ssl_cert: ((/cdns_ssl.certificate))
+          ssl_key: ((/cdns_ssl.private_key))
   - name: bpm
     release: bpm
-
   - name: route_registrar
     release: routing
     properties:
@@ -86,7 +84,6 @@ instance_groups:
             env: production
           uris:
           - ((route_subdomain)).system.a9s-ds-concourse.a9s-ops.de
-
   - name: nginx
     release: gui
     properties:
@@ -98,7 +95,6 @@ instance_groups:
       consul:
         dc: dc1
         domain: consul.dsf2
-
   - name: gui
     release: gui
     consumes:
@@ -111,7 +107,24 @@ instance_groups:
       consul:
         dc: dc1
         domain: consul.dsf2
+      distributed: true
 
+- name: lexer
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul:
+        <<: *consul
+        service_name: lexer
   - name: lexer
     release: lexer
     provides:
@@ -120,8 +133,24 @@ instance_groups:
       host: 0.0.0.0
       port: 3000
       consul:
-        service_name: ""
+        service_name: lexer
 
+- name: calculator
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul:
+        <<: *consul
+        service_name: calculator
   - name: calculator
     release: calculator
     provides:
@@ -129,7 +158,25 @@ instance_groups:
     properties:
       host: 0.0.0.0
       port: 4000
+      consul:
+        service_name: calculator
 
+- name: database
+  azs: [z2]
+  instances: 1
+  vm_type: nano
+  stemcell: default
+  networks:
+  - name: dynamic
+  jobs:
+  - name: consul
+    release: a9s-consul
+    consumes:
+      consul_nodes: nil
+    properties:
+      consul:
+        <<: *consul
+        service_name: database
   - name: database
     release: database
     provides:
@@ -137,6 +184,20 @@ instance_groups:
     properties:
       host: 0.0.0.0
       port: 6000
+      consul:
+        service_name: database
 
-# bosh deploy -d std140376 gui.yml -v route_subdomain=std140376  --no-redact
+# bosh deploy -d std140376 gui-instances.yml -v route_subdomain=std140376 --no-redact
+# bosh deploy -d std140376 gui-instances.yml -v route_subdomain=gui --no-redact
 # std140376.system.a9s-ds-concourse.a9s-ops.de
+# host std140376.service.dc1.consul.dsf2
+# host std140376-lexer.service.dc1.consul.dsf2
+# curl std140376-lexer.service.dc1.consul.dsf2:3000/is_alive
+
+# curl std140376-std140376-0.node.dc1.consul.dsf2:5000
+# curl std140376-lexer-0.node.dc1.consul.dsf2:3000/is_alive
+# curl std140376-calculator-0.node.dc1.consul.dsf2:4000/is_alive
+# curl std140376-database-0.node.dc1.consul.dsf2:6000/is_alive
+#      lexer: "http://std140376-lexer-0.node.dc1.consul.dsf2:#{LEXER_PORT}",
+#      calculator: "http://std140376-calculator-0.node.dc1.consul.dsf2:#{CALCULATOR_PORT}",
+#      database: "http://std140376-database-0.node.dc1.consul.dsf2:#{DB_PORT}"

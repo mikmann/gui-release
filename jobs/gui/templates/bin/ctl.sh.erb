@@ -7,12 +7,19 @@ pid_file=${run_dir}/pid
 packages_dir=/var/vcap/packages
 
 # Set environment variables
-export GUI_HOST=<%= p('gui.host') %>
-export GUI_PORT=<%= p('gui.port') %>
-export LEXER_PORT=<%= p('lexer.port') %>
-export CALCULATOR_PORT=<%= p('calculator.port') %>
-export DB_PORT=<%= p('database.port') %>
-export NODE_ROUTE=<%= "#{spec.deployment}-#{spec.deployment}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
+export GUI_HOST=<%= p('host') %>
+export GUI_PORT=<%= p('port') %>
+export LEXER_PORT="<%= link('lexer_port').p('port') %>"
+export CALCULATOR_PORT="<%= link('calculator_port').p('port') %>"
+export DB_PORT="<%= link('database_port').p('port') %>"
+export NODE_ROUTE=<%= "#{spec.deployment}-#{spec.name}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
+
+<% if p('distributed') %>
+  export NODE_ROUTE_LEXER=<%= "#{spec.deployment}-#{link('lexer_port').p('consul.service_name')}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
+  export NODE_ROUTE_CALCULATOR=<%= "#{spec.deployment}-#{link('calculator_port').p('consul.service_name')}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
+  export NODE_ROUTE_DB=<%= "#{spec.deployment}-#{link('database_port').p('consul.service_name')}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
+<% end %>
+
 
 case $1 in
 

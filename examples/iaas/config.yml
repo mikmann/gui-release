@@ -15,3 +15,7 @@ iaas:
     - 172.28.37.21
     join_ip: 172.28.35.21
     domain: consul.dsf2
+
+# nameserver 172.28.1.20
+# nameserver 109.234.108.234
+# nameserver 109.234.109.234

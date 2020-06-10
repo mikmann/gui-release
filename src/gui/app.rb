@@ -10,20 +10,20 @@ require_relative 'lib/http_rest_adapter'
 NODE_ROUTE = ENV['NODE_ROUTE']
 GUI_HOST = ENV['GUI_HOST'] || 'localhost'
 GUI_PORT = ENV['GUI_PORT'] || '5000'
-# LEXER_HOST = ENV['LEXER_HOST'] || 'localhost'
 LEXER_PORT = ENV['LEXER_PORT'] || '3000'
-# CALCULATOR_HOST = ENV['CALCULATOR_HOST'] || 'localhost'
+NODE_ROUTE_LEXER = ENV['NODE_ROUTE_LEXER'] || NODE_ROUTE
 CALCULATOR_PORT = ENV['CALCULATOR_PORT'] || '4000'
-# DB_HOST = ENV['DB_HOST'] || 'localhost'
+NODE_ROUTE_CALCULATOR = ENV['NODE_ROUTE_CALCULATOR'] || NODE_ROUTE
 DB_PORT = ENV['DB_PORT'] || '6000'
+NODE_ROUTE_DB = ENV['NODE_ROUTE_DB'] || NODE_ROUTE
 
 helpers do
   def config
     config ||= {
       remote_services: {
-        lexer: "http://#{NODE_ROUTE}:#{LEXER_PORT}",
-        calculator: "http://#{NODE_ROUTE}:#{CALCULATOR_PORT}",
-        database: "http://#{NODE_ROUTE}:#{DB_PORT}"
+        lexer: "http://#{NODE_ROUTE_LEXER}:#{LEXER_PORT}",
+        calculator: "http://#{NODE_ROUTE_CALCULATOR}:#{CALCULATOR_PORT}",
+        database: "http://#{NODE_ROUTE_DB}:#{DB_PORT}"
       },
       service_colors: {
         lexer: 'info',

@@ -68,47 +68,30 @@ check process gui
 
 ```yaml
 ---
----
 name: gui
 
 templates:
   bin/ctl.sh.erb: bin/ctl
 
-provides:
-- name: nodes
-  type: http
-
 packages:
   - ruby-2.6.5-r0.29.0
   - gui
 
+consumes:
+- name: lexer_port
+  type: http
+- name: calculator_port
+  type: http
+- name: database_port
+  type: http
+
 properties:
-  gui:
-    host:
-      description: "The hostname or IP address which the GUI app is running."
-      default: localhost
-    port:
-      description: "The port number which the ruby GUI app is listening."
-      default: 5000
-  lexer:
-    port:
-      description: "The port number which the ruby lexer app is listening."
-      default: 3000
-  calculator:
-    port:
-      description: "The port number which the ruby calculator app is listening."
-      default: 4000
-  database:
-    port:
-      description: "The port number which the ruby database app is listening."
-      default: 6000
-  nginx:
-    host:
-      description: "The hostname or IP address which the NGINX app is running."
-      default: localhost
-    port:
-      description: "The port number which the ruby NGINX app is listening."
-      default: 8080
+  host:
+    description: "The hostname or IP address which the GUI app is running."
+    default: localhost
+  port:
+    description: "The port number which the ruby GUI app is listening."
+    default: 5000
   consul:
     dc:
       description: "Consul DC"
@@ -144,9 +127,9 @@ packages_dir=/var/vcap/packages
 # Set environment variables
 export GUI_HOST=<%= p('gui.host') %>
 export GUI_PORT=<%= p('gui.port') %>
-export LEXER_PORT=<%= p('lexer.port') %>
-export CALCULATOR_PORT=<%= p('calculator.port') %>
-export DB_PORT=<%= p('database.port') %>
+export LEXER_PORT="<%= link('lexer_port').p('port') %>"
+export CALCULATOR_PORT="<%= link('calculator_port').p('port') %>"
+export DB_PORT="<%= link('database_port').p('port') %>"
 export NODE_ROUTE=<%= "#{spec.deployment}-#{spec.deployment}-0.node.#{p('consul.dc')}.#{p('consul.domain')}" %>
 
 case $1 in
@@ -780,8 +763,27 @@ $ rspec --init
 $ rspec spec --format documentation
 ```
 
+### Using BOSH Links to consume the port number properties from other jobs
 
-## TODOs
+Add this to the spec file of the gui job.
+
+```yaml
+consumes:
+- name: lexer_port
+  type: http
+- name: calculator_port
+  type: http
+- name: database_port
+  type: http
+```
+
+```yaml
+export LEXER_PORT="<%= link('lexer_port').p('port') %>"
+export CALCULATOR_PORT="<%= link('calculator_port').p('port') %>"
+export DB_PORT="<%= link('database_port').p('port') %>"
+```
+
+### TODOs
 
 1. Separate Java Script script and CSS styles
 2. Add test cases to the gui endpoints
