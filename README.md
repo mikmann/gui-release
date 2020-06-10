@@ -764,3 +764,21 @@ $ rspec spec --format documentation
 2. Add test cases to the gui endpoints
 3. Add test cases to the http_rest_adapter.rb class
 4. Add a BASIC Authentication
+
+### Using BOSH Links
+
+```yaml
+consumes:
+- name: lexer_port
+  type: http
+- name: calculator_port
+  type: http
+- name: database_port
+  type: http
+```
+
+```yaml
+export LEXER_PORT="<%= link('lexer_port').p('port') %>"
+export CALCULATOR_PORT="<%= link('calculator_port').p('port') %>"
+export DB_PORT="<%= link('database_port').p('port') %>"
+```
