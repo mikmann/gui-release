@@ -3,21 +3,18 @@
 set -e # exit immediately if a simple command exits with a non-zero status
 set -u # report the usage of uninitialized variables
 
-JOB_NAME="nginx"
+job_name=nginx
 
-export RUN_DIR=/var/vcap/sys/run/$JOB_NAME
-export LOG_DIR=/var/vcap/sys/log/$JOB_NAME
-export TMP_DIR=/var/vcap/sys/tmp/$JOB_NAME
-export STORE_DIR=/var/vcap/store/$JOB_NAME
-export JOB_DIR=/var/vcap/jobs/$JOB_NAME
+export run_dir=/var/vcap/sys/run/${job_name}
+export log_dir=/var/vcap/sys/log/${job_name}
+export tmp_dir=/var/vcap/sys/tmp/${job_name}
+export store_dir=/var/vcap/store/${job_name}
+export config_dir=/var/vcap/jobs/${job_name}/config
+export pid_file=${run_dir}/${job_name}.pid
+export packages_dir=/var/vcap/packages
 
-export CONF_DIR=/var/vcap/jobs/$JOB_NAME/config
 
-export PIDFILE=$RUN_DIR/$JOB_NAME.pid
-
-source /var/vcap/packages/nginx-1.17.3/bosh/runtime.env
-
-for dir in $RUN_DIR $LOG_DIR $TMP_DIR $STORE_DIR ; do
+for dir in ${run_dir} ${log_dir} ${tmp_dir} ${store_dir} ; do
   if ! [ -d $dir ] ; then
     mkdir -p $dir
   fi
@@ -50,26 +47,37 @@ function wait_pid_death() {
 case $1 in
 
   start)
+    cd ${packages_dir}
+    nginx_version=$(find nginx-*)
 
-    nginx -g "pid $PIDFILE;" -c $CONF_DIR/nginx.conf
+    if [[ $? != 0 ]]
+    then
+      echo "No NGINX Version found"
+      exit 1
+    fi
+
+    source ${packages_dir}/${nginx_version}/bosh/runtime.env
+
+    nginx -g "pid ${pid_file};" -c ${config_dir}/nginx.conf
     ;;
+
   stop)
     timeout="25"
 
-    if [ ! -f "${PIDFILE}" ]; then
-      echo "Pidfile ${PIDFILE} doesn't exist"
+    if [ ! -f "${pid_file}" ]; then
+      echo "Pidfile ${pid_file} doesn't exist"
       exit 0
     fi
-    pid=$(head -1 $PIDFILE)
+    pid=$(head -1 ${pid_file})
 
     if [ -z "${pid}" ]; then
-      echo "Unable to get pid from ${PIDFILE}"
+      echo "Unable to get pid from ${pid_file}"
       exit 1
     fi
 
     if [ $(ps -p "${pid}" | wc -l) -le 1 ]; then
       echo "Process ${pid} is not running"
-      rm -f "${PIDFILE}"
+      rm -f "${pid_file}"
       exit 0
     fi
 
@@ -88,11 +96,11 @@ case $1 in
       exit 1
     else
       echo "Stopped"
-      rm -f "${PIDFILE}"
+      rm -f "${pid_file}"
     fi
 
     ;;
   *)
-    echo "Usage: ctl {start|stop}"
-    ;;
+    echo "Usage: ctl {start|stop}" ;;
+
 esac
